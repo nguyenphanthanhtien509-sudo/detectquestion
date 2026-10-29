@@ -3,3 +3,5 @@
 gateway-config.json
 *.local.json
 backups/
+Detect_Question/coa-exam-app/.next/
+Detect_Question/coa-exam-app/*.tsbuildinfo

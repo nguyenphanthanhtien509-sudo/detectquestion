@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Detect Question · Quản lý tài khoản</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter,system-ui,sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin:0; min-height:100vh; background:radial-gradient(circle at top left,#1f3a6e,#07111f 48%,#040914); color:#e8eef8; }
+      main { max-width:960px; margin:auto; padding:48px 20px; }
+      h1 { margin:0; font-size:clamp(28px,5vw,42px); letter-spacing:-.035em; } h2 { margin:0 0 14px; }
+      .lead,.muted { color:#aab9d4; line-height:1.55; }.lead{max-width:690px}.card{margin-top:22px;padding:24px;border:1px solid #294365;border-radius:18px;background:#0d192eee;box-shadow:0 18px 55px #0005}
+      .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; } label{display:block;margin:0 0 5px;color:#b8c8e7;font-size:13px} input{width:100%;padding:12px;color:#f7fbff;background:#091526;border:1px solid #36577f;border-radius:9px;font:inherit}
+      button{padding:11px 14px;border:0;border-radius:9px;background:#4f8cff;color:white;font:600 14px inherit;cursor:pointer}button.secondary{background:#253b59}button.danger{background:#bd3c52}.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:14px}#app{display:none}#notice{min-height:22px;margin:12px 0 0;color:#ffb8c1}
+      table{width:100%;border-collapse:collapse;margin-top:16px}th,td{padding:12px 8px;border-bottom:1px solid #29415e;text-align:left;vertical-align:middle}th{color:#9eb4d9;font-size:12px;text-transform:uppercase}.status{display:inline-block;padding:3px 8px;border-radius:999px;background:#1c5545;color:#9ce1c6;font-size:12px}.off{background:#5c2d3a;color:#ffc0cb}
+      @media(max-width:680px){main{padding:30px 14px}.card{padding:17px}.grid{grid-template-columns:1fr}table,thead,tbody,tr,td{display:block}thead{display:none}tr{padding:10px 0;border-bottom:1px solid #29415e}td{padding:4px 0;border:0}}
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Quản lý tài khoản</h1>
+      <p class="lead">Chỉ chạy trên máy này tại <code>127.0.0.1</code>. Cấp MSV để sử dụng Detect Question, kiểm soát một thiết bị cho mỗi tài khoản và reset thiết bị khi cần.</p>
+      <section id="login" class="card">
+        <h2>Đăng nhập quản trị</h2>
+        <div class="grid"><div><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="admin@example.com"></div><div><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div></div>
+        <div class="actions"><button id="signInButton">Đăng nhập</button></div><p id="notice" role="alert"></p>
+      </section>
+      <section id="app" class="card">
+        <div class="actions" style="justify-content:space-between"><h2>Danh sách MSV</h2><span><button id="refreshButton" class="secondary">Làm mới</button> <button id="signOutButton" class="secondary">Đăng xuất</button></span></div>
+        <div class="grid"><div><label for="studentId">Mã số sinh viên</label><input id="studentId" maxlength="64" placeholder="VD: 22110xxx"></div><div><label for="displayName">Tên hiển thị</label><input id="displayName" maxlength="160" placeholder="Không bắt buộc"></div></div>
+        <div class="actions"><button id="saveButton">Cấp / cập nhật tài khoản</button></div>
+        <p id="appNotice" class="muted"></p><table><thead><tr><th>MSV</th><th>Tên</th><th>Trạng thái</th><th>Thiết bị</th><th>Thao tác</th></tr></thead><tbody id="rows"></tbody></table>
+      </section>
+    </main>
+    <script src="config.js"></script><script src="app.js"></script>
+  </body>
+</html>

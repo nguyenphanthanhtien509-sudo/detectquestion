@@ -1,0 +1,15 @@
+scratch/
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+orchestrator/logs/*.log
+release/*.exe
+release/usb-preview/
+release/portable/
+desktop/usb/bin/
+__pycache__/
+*.pyc
+account-portal/local-admin-config.js
+supabase/.temp/
+sites/

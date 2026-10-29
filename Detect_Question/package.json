@@ -1,0 +1,42 @@
+{
+  "scripts": {
+    "admin:portal": "node account-portal/local-server.js",
+    "sync:config": "node tools/sync_env.js",
+    "build": "node tools/build_dist.js",
+    "test": "node tests/production-hardening.test.js && node tests/comprehensive-audit.test.js && node tests/typed-question-contract.test.js && node tests/multi-agent-debate.test.js && node tests/moodle-ktmt-quiz-fixture.test.js && node tests/moodle-ktmt-2019-fixture.test.js && node tests/moodle-ktmt-k15-fixture.test.js && node tests/moodle-ktmt-k15-de2-fixture.test.js && node tests/moodle-ktmt-lopchan-2019-fixture.test.js && node tests/moodle-ktmt-midterm-gk-fixture.test.js && node tests/moodle-ktmt-thichung-2018-fixture.test.js && node tests/moodle-ktmt-clc-2017-fixture.test.js && node tests/moodle-ktmt-quiz-clc-2017-fixture.test.js && node tests/auto-apply-regression.test.js && node --test tests/esp32-gateway.test.js",
+    "test:esp32": "node --test tests/esp32-gateway.test.js",
+    "test:images": "node tests/capture-compression.test.js",
+    "esp32:benchmark": "node tools/esp32_transport_benchmark.js",
+    "esp32:gateway": "node tools/esp32_gateway.js",
+    "build:usb-app": "powershell -ExecutionPolicy Bypass -File tools/build_usb_app.ps1",
+    "start:orchestrator": "node orchestrator/server.js",
+    "benchmark": "node orchestrator/benchmark.js",
+    "start:backend-app": "node desktop/DetectQuestionBackend.js",
+    "stop:backend-app": "node desktop/DetectQuestionBackend.js --stop",
+    "build:backend-app": "powershell -ExecutionPolicy Bypass -File tools/build_serial_bridge.ps1 && powershell -ExecutionPolicy Bypass -File tools/generate_extension_parity_bundle.ps1 && pkg --config package.json --no-bytecode --public --public-packages \"*\" --target node18-win-x64 --output release/DetectQuestionBackend.exe desktop/DetectQuestionBackend.js",
+    "build:portable-app": "npm run build:backend-app && powershell -ExecutionPolicy Bypass -File tools/build_portable_app.ps1",
+    "build:serial-bridge": "powershell -ExecutionPolicy Bypass -File tools/build_serial_bridge.ps1"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.8.1",
+    "pkg": "^5.8.1"
+  },
+  "dependencies": {
+    "puppeteer-core": "^19.11.1",
+    "serialport": "^12.0.0"
+  },
+  "pkg": {
+    "scripts": [
+      "desktop/**/*.js",
+      "orchestrator/**/*.js",
+      "tools/esp32_gateway.js"
+    ],
+    "assets": [
+      "src/shared/**/*.js",
+      "src/content/**/*.js",
+      "node_modules/@serialport/bindings-cpp/prebuilds/win32-x64/*.node",
+      "node_modules/@serialport/bindings-cpp/package.json",
+      "desktop/usb/bin/SerialBridge.exe"
+    ]
+  }
+}

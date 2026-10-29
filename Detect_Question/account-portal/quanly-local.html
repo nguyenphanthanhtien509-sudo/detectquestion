@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="vi" class="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detect Question · Quản lý MSV cục bộ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              border: '#27272a',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Enforce strictly NO shadow across the entire page (flat design) */
+      *, *::before, *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      /* Styles for dynamic elements created by app.js */
+      #rows tr {
+        border-bottom: 1px solid #27272a;
+        transition: background-color 0.1s ease;
+      }
+      #rows tr:hover {
+        background-color: #1f1f23;
+      }
+      #rows td {
+        padding: 0.625rem 0.875rem;
+        vertical-align: middle;
+        color: #d4d4d8;
+        font-size: 0.875rem;
+      }
+      #rows td strong {
+        color: #fafafa;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      /* Status badges rendered by app.js - flat, high-contrast, no shadow */
+      .status {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1rem;
+        background-color: #052e16;
+        color: #4ade80;
+        border: 1px solid #166534;
+      }
+      .status.off {
+        background-color: #27272a;
+        color: #a1a1aa;
+        border: 1px solid #3f3f46;
+      }
+
+      /* Action buttons rendered by app.js - flat, simple, no shadow */
+      button.secondary {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.625rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #27272a;
+        color: #e4e4e7;
+        border: 1px solid #3f3f46;
+        cursor: pointer;
+        transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+      }
+      button.secondary:hover {
+        background-color: #3f3f46;
+        border-color: #52525b;
+        color: #ffffff;
+      }
+      button.danger {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.625rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #450a0a;
+        color: #f87171;
+        border: 1px solid #7f1d1d;
+        cursor: pointer;
+        transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+      }
+      button.danger:hover {
+        background-color: #7f1d1d;
+        border-color: #991b1b;
+        color: #fecaca;
+      }
+    </style>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-zinc-800 selection:text-white">
+    <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      
+      <!-- Header -->
+      <header class="border-b border-zinc-800 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">Quản lý tài khoản cục bộ</h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">Local Admin</span>
+          </div>
+          <p class="text-sm text-zinc-400 mt-1">Trang quản trị nội bộ chạy tại <code>127.0.0.1</code> · Cấp MSV, reset thiết bị và kiểm soát kích hoạt.</p>
+        </div>
+      </header>
+
+      <!-- Login Section (fallback if manual auth needed) -->
+      <section id="login" style="display:none" class="border border-zinc-800 bg-zinc-900 rounded-md p-5 space-y-4">
+        <h2 class="text-base font-semibold text-zinc-100">Đăng nhập tài khoản quản trị</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="email" class="block text-xs font-medium text-zinc-300 mb-1.5">Email quản trị</label>
+            <input id="email" type="email" autocomplete="email" placeholder="admin@example.com" class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:outline-none rounded px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500">
+          </div>
+          <div>
+            <label for="password" class="block text-xs font-medium text-zinc-300 mb-1.5">Mật khẩu</label>
+            <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:outline-none rounded px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500">
+          </div>
+        </div>
+        <div class="flex items-center gap-3 pt-1">
+          <button id="signInButton" class="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded transition-colors cursor-pointer">Đăng nhập</button>
+        </div>
+        <p id="notice" class="text-sm text-red-400 min-h-[20px]"></p>
+      </section>
+
+      <!-- App Main Section -->
+      <section id="app" style="display:block" class="space-y-6">
+        
+        <!-- Form Cấp / Cập nhật tài khoản -->
+        <div class="border border-zinc-800 bg-zinc-900 rounded-md p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 id="formTitle" class="text-sm font-semibold text-zinc-200 uppercase tracking-wide">Cấp / cập nhật tài khoản MSV</h2>
+            <div class="flex items-center gap-2">
+              <button id="refreshButton" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Làm mới
+              </button>
+              <button id="signOutButton" style="display:none" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 border border-zinc-700 rounded text-xs font-medium transition-colors cursor-pointer">
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-6 gap-3">
+            <div class="sm:col-span-2">
+              <label for="studentId" class="block text-xs font-medium text-zinc-400 mb-1">Mã số sinh viên <span class="text-red-400">*</span></label>
+              <input id="studentId" maxlength="64" placeholder="VD: 22110xxx" class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:outline-none rounded px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 font-mono transition-opacity">
+            </div>
+            <div class="sm:col-span-2">
+              <label for="displayName" class="block text-xs font-medium text-zinc-400 mb-1">Tên hiển thị</label>
+              <input id="displayName" maxlength="160" placeholder="Tên sinh viên (không bắt buộc)" class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:outline-none rounded px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500">
+            </div>
+            <div class="sm:col-span-1">
+              <label for="isActiveSelect" class="block text-xs font-medium text-zinc-400 mb-1">Trạng thái</label>
+              <select id="isActiveSelect" class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:outline-none rounded px-2.5 py-2 text-sm text-zinc-100 cursor-pointer">
+                <option value="true">Đang bật</option>
+                <option value="false">Đã tắt</option>
+              </select>
+            </div>
+            <div class="sm:col-span-1 flex items-end gap-1.5">
+              <button id="saveButton" class="flex-1 py-2 px-3 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-semibold rounded transition-colors cursor-pointer whitespace-nowrap text-center">
+                Lưu
+              </button>
+              <button id="cancelEditButton" type="button" style="display:none" class="py-2 px-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 text-sm font-medium rounded transition-colors cursor-pointer whitespace-nowrap text-center" title="Hủy chỉnh sửa">
+                Hủy
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-zinc-400 min-h-[18px]">
+            <p id="appNotice"></p>
+            <span class="text-zinc-500">Bấm "Sửa" ở từng dòng hoặc click vào badge để đổi Bật/Tắt</span>
+          </div>
+        </div>
+
+        <!-- Table Danh sách MSV -->
+        <div class="border border-zinc-800 bg-zinc-900 rounded-md overflow-hidden">
+          <div class="px-4 py-3 border-b border-zinc-800 bg-zinc-900/60 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Danh sách sinh viên được cấp quyền</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 text-xs uppercase font-medium tracking-wider">
+                  <th class="py-2.5 px-3.5">MSV</th>
+                  <th class="py-2.5 px-3.5">Tên</th>
+                  <th class="py-2.5 px-3.5">Trạng thái</th>
+                  <th class="py-2.5 px-3.5">Thiết bị</th>
+                  <th class="py-2.5 px-3.5 text-right sm:text-left">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="rows" class="divide-y divide-zinc-800/80">
+                <!-- Dynamically rendered by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Global notice if any -->
+      <p id="notice" class="text-sm text-red-400 min-h-[20px]"></p>
+    </main>
+
+    <script src="local-admin-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

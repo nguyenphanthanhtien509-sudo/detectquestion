@@ -1,0 +1,225 @@
+[
+  {
+    "id": "doc-ch01",
+    "filename": "ch01_full.pdf",
+    "chapterId": "ch1",
+    "title": "Chapter 1: Computer System and Performance",
+    "pages": 99,
+    "slides": "Slides 1.1 – 1.104",
+    "format": "PDF (Lecture Slides - William Stallings 10th Ed. / HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Concepts of Computers & Four Main Functions (pp. 3–5)",
+      "2. Classification of Computers: PC, PMD, IoT, Servers, Supercomputers (pp. 6–7)",
+      "3. Computer Organization vs. Computer Architecture: ISA, Microarchitecture, System Design (pp. 8–11)",
+      "4. Computer Structure: CPU, Main Memory, I/O, System Interconnection & Example System Specs (pp. 12–31)",
+      "5. Multicore Computer Architecture & Core Components (pp. 32–33)",
+      "6. Computer System Layers, Program Code Levels & 7-Level Hierarchy (pp. 34–39)",
+      "7. Von Neumann vs. Harvard Architectures & Fetch-Decode-Execute Cycle (pp. 40–46)",
+      "8. Evolution of Computers (Gen 0 to Gen 4) & Intel Processor Families (pp. 47–59, 83–90)",
+      "9. Microprocessor Speed Techniques: Pipelining, Branch Prediction, Data Flow, Speculative Execution (pp. 60–66)",
+      "10. Computer Performance: Relative Performance, Clocking, CPU Time, CPI, MIPS, Amdahl's Law (pp. 67–82)",
+      "11. CISC vs. RISC Architectures, Register Windows & Flynn's Taxonomy (pp. 91–98)"
+    ],
+    "detectedElements": {
+      "tables": 6,
+      "formulas": 9,
+      "diagrams": 18,
+      "workedExamples": 8
+    },
+    "extractionLimitations": "Page 4 diagram contains bilingual Vietnamese/English labels ('dữ liệu vào/ra', 'Bộ xử lý'); Page 75 contains a Vietnamese practice exercise table ('Cho bảng chỉ ra các dãy lệnh... Tính CPI trung bình?'). Both have been accurately translated into academic English and incorporated into the question bank. Slide numbering skips 1.41, 1.68–1.69, 1.74, 1.82–1.83 in the original deck without content loss."
+  },
+  {
+    "id": "doc-ch02",
+    "filename": "ch02_full.pdf",
+    "chapterId": "ch2",
+    "title": "Chapter 2: Top Level View of Computer Function",
+    "pages": 34,
+    "slides": "Slides 1 – 95 (2 slides per page)",
+    "format": "PDF (2-up Lecture Handout - William Stallings 10th Ed. / HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Von Neumann Architecture Principles & Basic Computer System Components (pp. 1–3)",
+      "2. CPU Registers: PC, IR, MAR, MBR, I/O AR, I/O BR, PSW Flags (pp. 3–6)",
+      "3. Instruction Cycle (Fetch & Execute), Hex Program Execution Trace & State Diagram (pp. 7–8)",
+      "4. Interrupts: Classes, Software Interrupts, Polling vs. Interrupt I/O, Interrupt Cycle (pp. 8–14)",
+      "5. Multiple Interrupts (Disable Interrupts vs. Priorities) & x86 Interrupt Vector Table (p. 15)",
+      "6. I/O Function, Direct Memory Access (DMA), I/O Module Ports & Traffic Rates (pp. 16–17)",
+      "7. Separate (Isolated) I/O vs. Memory-Mapped I/O Addressing (pp. 18–19)",
+      "8. Interconnection Structure, Transfer Types & System Bus Lines (pp. 20–27)",
+      "9. Bus Design Elements: Single vs. Multiple-Bus Hierarchies, Arbitration, Timing, Bus Widths (pp. 28–34)"
+    ],
+    "detectedElements": {
+      "tables": 4,
+      "formulas": 4,
+      "diagrams": 16,
+      "workedExamples": 5
+    },
+    "extractionLimitations": "Formatted as 2 slides per page; slide numbers in the original footer have minor skips (e.g. 14 to 17, 32 to 35, 36 to 39) where animations were flattened. All diagrams (Figure 3.2, 3.5 hex execution trace, 3.6 state diagram, 3.7 interrupt flow, 3.16 bus scheme, 3.18 timing diagram) are crisp and fully legible."
+  },
+  {
+    "id": "doc-ch03a",
+    "filename": "ch03_CacheMemory.pdf",
+    "chapterId": "ch3",
+    "title": "Chapter 3 (Part A): Computer Memory & Cache Memory",
+    "pages": 38,
+    "slides": "Slides 1 – 86 (2 slides per page)",
+    "format": "PDF (2-up Lecture Handout - William Stallings 10th Ed. / HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Byte-Oriented Memory Organization & RAM (SRAM vs. DRAM) / ROM Overview (pp. 1–4)",
+      "2. Characteristics of Memory Systems: Location, Capacity, Unit of Transfer, Access Method (pp. 4–6)",
+      "3. The Memory Hierarchy Pyramid & Locality of Reference (Temporal, Spatial, Algorithmic) (pp. 7–10)",
+      "4. Cache Memory Principles, (S, E, B) Organization & Cache Read Hit/Miss Operations (pp. 8–14)",
+      "5. Elements of Cache Design & Logical (Virtual) vs. Physical Cache Addressing (pp. 15–16)",
+      "6. Direct Mapping: Address Structure (Tag, Line, Word), Summary Formulas & Examples (pp. 17–23)",
+      "7. Fully Associative Mapping: Address Structure, Organization & Summary (pp. 23–26)",
+      "8. k-Way Set-Associative Mapping: Address Structure, 2-Way Simulation & Summary (pp. 27–33)",
+      "9. Replacement Algorithms (LRU, FIFO, LFU, Random) & Page Trace Examples (pp. 34–35)",
+      "10. Cache Write Policies (Write-Through vs. Write-Back) & Multicore Cache Coherency (pp. 36–37)"
+    ],
+    "detectedElements": {
+      "tables": 5,
+      "formulas": 12,
+      "diagrams": 22,
+      "workedExamples": 9
+    },
+    "extractionLimitations": "Slide 71 (page 31) has a known typo in the original slide text ('Number of blocks in main memory = 2^d' instead of '2^s'); our question bank and explanations explicitly highlight this slide erratum so students are prepared for standard exam grading. Slide 77 also labels Least-Frequently-Used with the acronym '(LRU)' in parentheses as a slide typo for LFU."
+  },
+  {
+    "id": "doc-ch03b",
+    "filename": "ch03_Internal_External.pdf",
+    "chapterId": "ch3",
+    "title": "Chapter 3 (Part B): Internal Memory & External Storage Devices",
+    "pages": 41,
+    "slides": "Slides 1 – 96 (2 slides per page)",
+    "format": "PDF (2-up Lecture Handout - William Stallings 10th Ed. / HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Semiconductor Memory Cells & Types (RAM, ROM, PROM, EPROM, EEPROM, Flash) (pp. 1–4)",
+      "2. Word-Oriented Organization, Alignment & Byte Ordering (Big-Endian vs. Little-Endian) (pp. 5–7)",
+      "3. Memory Read and Write Bus Transactions (pp. 7–10)",
+      "4. DRAM vs. SRAM Comparison, DRAM Bank 2D Grid, RAS/CAS Two-Phase Addressing (pp. 11–15)",
+      "5. Enhanced DRAMs (SDRAM, DDR1/2/3), 16Mbit Chip Organization & DRAM Modules (pp. 16–18)",
+      "6. Memory Interleaving: Low-Order Cyclic, High-Order Block & Mixed Interleaving (pp. 19–20)",
+      "7. Magnetic Disk Geometry (Platters, Tracks, Sectors, Cylinders, Zones) & Capacity Formula (pp. 21–26)",
+      "8. Sector Identification: Physical CHS vs. Logical Block Addressing (LBA) (pp. 26–28)",
+      "9. Disk Access Time: Seek Time, Rotational Latency, Transfer Time & Worked Example (pp. 28–32)",
+      "10. Solid-State Disks (SSDs): Flash Translation Layer, Read/Write Asymmetry & Wear-Leveling (pp. 32–33)",
+      "11. RAID Levels 0, 1, 2, 3, 4, 5, and 6 Architecture & Fault Tolerance (pp. 34–38)",
+      "12. Optical Storage: CD-ROM, DVD, Blu-ray, Pits/Lands & CD-ROM 2352-Byte Sector Format (pp. 38–41)"
+    ],
+    "detectedElements": {
+      "tables": 4,
+      "formulas": 8,
+      "diagrams": 28,
+      "workedExamples": 7
+    },
+    "extractionLimitations": "Combined with ch03_CacheMemory.pdf to form the complete Chapter 3 (Computer Memory) module. All diagrams and numerical examples (disk capacity on p. 23, disk access time on p. 29, mixed interleaving on p. 20) are complete and verified."
+  },
+  {
+    "id": "doc-ch04",
+    "filename": "ch04_CPU.pdf",
+    "chapterId": "ch4",
+    "title": "Chapter 4: The Central Processing Unit",
+    "pages": 39,
+    "slides": "Slides 3.1 – 3.47 (39 pages)",
+    "format": "PDF (Lecture Slides - William Stallings 10th Ed. / Kip Irvine x86 / HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Processor Organization, Main CPU Components (CU, ALU, Registers) & Fetch-Decode-Execute-Store (pp. 3–6)",
+      "2. Register Organization: User-Visible vs. Control and Status Registers (p. 7)",
+      "3. Evolution of Intel Microprocessors: 8086/8088 to 80286, 80386, P6, Pentium 4, Xeon, EM64T, x64 (pp. 8–14)",
+      "4. Basic Program Execution Registers & Specialized GPR Roles (EAX, ECX, ESP, ESI, EDI, EBP) (pp. 15–16)",
+      "5. Accessing Partial Registers (32-bit, 16-bit, 8-bit High/Low) & x86-64 16 GPRs (pp. 17–18, 22–25)",
+      "6. EFLAGS / RFLAGS Register: Status Flags (CF, PF, AF, ZF, SF, OF), Control & System Flags (pp. 19–20, 24)",
+      "7. Floating-Point (ST0–ST7), MMX, and XMM Registers (p. 21)",
+      "8. Memory Segmentation, Real-Address Mode & 20-bit Physical Address Calculation (pp. 26–30)",
+      "9. Flat Memory Model, Protected Mode Architecture, GDT/LDT Segment Descriptors & Paging (pp. 31–38)"
+    ],
+    "detectedElements": {
+      "tables": 3,
+      "formulas": 4,
+      "diagrams": 11,
+      "workedExamples": 3
+    },
+    "extractionLimitations": "Footer slide numbers use prefix '3.x' inherited from the template, while the title slide is 'Chapter 4: THE CENTRAL PROCESSING UNIT'. All text and diagrams are in English and 100% legible."
+  },
+  {
+    "id": "doc-ch05",
+    "filename": "ch05_datarepresentation_computerarithmetic.pdf",
+    "chapterId": "ch5",
+    "title": "Chapter 5: Data Representation and Computer Arithmetic",
+    "pages": 24,
+    "slides": "Slides 4.1 – 4.47 (24 pages, 2 slides per page)",
+    "format": "PDF (2-up Lecture Handout - William Stallings 10th Ed. / HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Number Systems & Radix (Decimal, Binary, Octal, Hexadecimal) (pp. 1–4)",
+      "2. Base Conversions: Any Base to Decimal, Decimal Integer/Fraction to Binary, Hex, Octal (pp. 5–10)",
+      "3. Unsigned Binary Arithmetic: Addition, Subtraction, Multiplication (pp. 10–11)",
+      "4. Signed Integer Representation: Sign-Magnitude, One's Complement, Two's Complement (pp. 12–15)",
+      "5. Binary-Coded Decimal (BCD): Unpacked vs. Packed BCD & BCD Addition with +6 Correction (pp. 16–17)",
+      "6. Floating-Point Representation & IEEE 754 Single (32-bit) and Double (64-bit) Precision (pp. 18–21)",
+      "7. Custom 8-Bit Floating-Point Format & IEEE 754 Worked Conversion Examples (pp. 22–23)"
+    ],
+    "detectedElements": {
+      "tables": 8,
+      "formulas": 7,
+      "diagrams": 6,
+      "workedExamples": 16
+    },
+    "extractionLimitations": "Pages 1 and 16–21 contain Vietnamese slide headings and explanatory bullets for BCD and IEEE 754 ('Mã BCD', 'Hiệu đính +0110', 'Chuẩn IEEE754/85'). Slide 27 (page 14) shows a typo in the visual addition of 11111100 + 1 = 11111100 (correct 2's complement of 00000011 is 11111101). All Vietnamese sections have been translated into natural academic English and the slide 27 typo is explicitly noted."
+  },
+  {
+    "id": "doc-ch06a",
+    "filename": "ch06_hopngu_phan1.pdf",
+    "chapterId": "ch6",
+    "title": "Chapter 6 (Part 1A): Assembly Language Fundamentals & NASM Structure",
+    "pages": 21,
+    "slides": "Slides 6.15 – 6.57 (21 pages, 2 slides per page)",
+    "format": "PDF (2-up Lecture Handout - HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Bitwise Shift, Rotate, and Masking Exercises (Set, Clear, Toggle, Keep Low Nibble) (p. 1)",
+      "2. Assemblers Overview (MASM, GAS, FASM, TASM, NASM) & Linux x86/x64 Build Pipeline (pp. 2–6)",
+      "3. NASM Program Structure (.data, .bss, .text) & Statement Types (pp. 6–7)",
+      "4. Addressing Modes: Register, Immediate, Direct, and x86 Scaled-Index Indirect Addressing (pp. 8–10)",
+      "5. x86lite / x86-64 Register File & Assembly Statement Syntax (pp. 10–12)",
+      "6. Data Declaration Directives: DX (db, dw, dd, dq, dt), times, and RESX (resb, resw) (pp. 12–15)",
+      "7. Basic Instructions (MOV, ADD, SUB, INC, DEC) & Arithmetic Status Flags (CF, ZF, SF, OF) (pp. 16–20)"
+    ],
+    "detectedElements": {
+      "tables": 6,
+      "formulas": 3,
+      "diagrams": 10,
+      "workedExamples": 12
+    },
+    "extractionLimitations": "Page 1 contains Vietnamese bitwise exercises ('Dịch bit', 'Bật bit', 'Đảo bit', 'Xoá bit'); translated into standard English assembly/bitwise problems."
+  },
+  {
+    "id": "doc-ch06b",
+    "filename": "ch06_part1_2.pdf",
+    "chapterId": "ch6",
+    "title": "Chapter 6 (Part 1B): x86 Instruction Set — Data Transfer, Arithmetic, Control & Bitwise",
+    "pages": 15,
+    "slides": "Slides 1, 21 – 54 (15 pages, 2 slides per page)",
+    "format": "PDF (2-up Lecture Handout - HCM-UTE)",
+    "status": "Verified & Indexed",
+    "extractedSections": [
+      "1. Data Transfer Instructions: MOV, MOVZX, MOVSX, XCHG, LEA, PUSH, POP, PUSHA/POPA, PUSHF/POPF (pp. 1–2)",
+      "2. Arithmetic Instructions: ADD, ADC, INC, DEC, SUB, SBB, NEG, CMP & Trace Examples (pp. 3–5)",
+      "3. Program Control & Conditional Jumps: JMP, JE/JZ, JNE/JNZ, JG/JL, JGE/JLE, JA/JB (pp. 6–7)",
+      "4. Procedure Calls (CALL, RET, INT, IRET) & Loop Instructions (LOOP, LOOPE, LOOPNE) (pp. 7–8)",
+      "5. Logical (AND, OR, XOR, NOT) & Shift/Rotate Instructions (SHL, SAL, SHR, SAR, ROL, ROR, RCL, RCR) (pp. 8–10)",
+      "6. Unsigned and Signed Multiplication & Division: MUL, IMUL (1/2/3 operands), DIV, IDIV (pp. 10–14)"
+    ],
+    "detectedElements": {
+      "tables": 11,
+      "formulas": 4,
+      "diagrams": 2,
+      "workedExamples": 14
+    },
+    "extractionLimitations": "Combined with ch06_hopngu_phan1.pdf into Chapter 6. Slide 31 (p. 6) lists JA/JB as 'Jump if above/below, signed' in the slide table (standard x86 JA/JB is unsigned while JG/JL is signed); our explanations note both the slide table wording and standard x86 architecture semantics."
+  }
+]

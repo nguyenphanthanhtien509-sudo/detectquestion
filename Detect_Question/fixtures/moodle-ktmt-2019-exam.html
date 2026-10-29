@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài Thi Cuối Kỳ Môn Kiến Trúc Máy Tính và Hợp Ngữ 2019 - HCMUTE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --border-color: #cbd5e1;
+      --card-bg: #ffffff;
+      --page-bg: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --info-bg: #f8fafc;
+      --selected-bg: #e0f2fe;
+      --code-bg: #0f172a;
+      --code-color: #f8fafc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--page-bg);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    /* legacy header styles cleaned */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 7px 14px; font-size: 13px; font-weight: 500; border-radius: 6px;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { border-color: var(--border-color); background: white; color: #334155; }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    .view-mode-toggle {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 6px;
+      gap: 4px;
+    }
+    .view-mode-btn {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #475569;
+      transition: all 0.15s;
+    }
+    .view-mode-btn.active {
+      background: white;
+      color: #0284c7;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .breadcrumb-nav {
+      max-width: 1360px; margin: 12px auto 0; padding: 0 20px; font-size: 12px; color: var(--text-muted);
+    }
+    .breadcrumb-nav a { color: #0284c7; text-decoration: none; }
+    .breadcrumb-nav span { margin: 0 6px; color: #9ca3af; }
+
+    .layout-container {
+      max-width: 1360px; margin: 16px auto 50px; padding: 0 20px;
+      display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 24px; align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .layout-container { grid-template-columns: 1fr; }
+      .quiz-nav-sidebar { order: -1; }
+    }
+
+    .exam-header-card {
+      background: white; border: 1px solid var(--border-color); border-radius: 8px;
+      padding: 16px 22px; margin-bottom: 20px;
+    }
+    .exam-header-card h2 { font-size: 19px; color: #0f172a; margin-bottom: 6px; }
+    .exam-meta-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .exam-meta-table td { padding: 4px 8px; border-bottom: 1px solid #f8fafc; }
+    .exam-meta-table td.cell-label { font-weight: 600; width: 160px; color: #475569; }
+
+    /* Single Question per page mode styling */
+    body.single-question-mode .que {
+      display: none !important;
+    }
+    body.single-question-mode .que.current-page {
+      display: grid !important;
+    }
+
+    /* Moodle Question Card */
+    .que {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 8px; margin-bottom: 20px; display: grid;
+      grid-template-columns: 140px 1fr; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      overflow: hidden; transition: border-color 0.2s;
+    }
+    .que:hover { border-color: #94a3b8; }
+
+    .que .info {
+      background: var(--info-bg); border-right: 1px solid var(--border-color);
+      padding: 16px 14px; display: flex; flex-direction: column; gap: 8px; font-size: 12px;
+    }
+    .que .info h3.no { font-size: 14px; font-weight: 700; color: #0f172a; }
+    .que .info .state {
+      font-weight: 600; padding: 3px 8px; border-radius: 4px; display: inline-block; width: fit-content;
+      color: #059669; background: #ecfdf5;
+    }
+    .que .info .state.unanswered { color: #d97706; background: #fef3c7; }
+    .que .info .grade { color: var(--text-muted); font-size: 11px; }
+    .que .info .questionflag { margin-top: auto; color: #64748b; cursor: pointer; user-select: none; }
+
+    .que .content { padding: 20px 24px; font-size: 15px; }
+    .que .formulation { display: flex; flex-direction: column; gap: 14px; }
+    .que .qtext { font-size: 15px; font-weight: 500; line-height: 1.6; color: #0f172a; }
+    .que .prompt { font-size: 13px; font-weight: 600; color: #475569; }
+
+    .que .answer { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .que .answer .r0, .que .answer .r1 {
+      display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
+      border-radius: 6px; border: 1px solid transparent; transition: all 0.15s; cursor: pointer;
+    }
+    .que .answer .r0:hover, .que .answer .r1:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .que .answer .r0.active, .que .answer .r1.active { background: var(--selected-bg); border-color: #93c5fd; }
+
+    .que .answer input[type="radio"], .que .answer input[type="checkbox"] {
+      margin-top: 3px; width: 18px; height: 18px; cursor: pointer; accent-color: #0284c7; flex-shrink: 0;
+    }
+    .que .answer label { cursor: pointer; display: flex; align-items: baseline; gap: 8px; width: 100%; user-select: none; }
+    .answernumber { font-weight: 600; color: #334155; min-width: 22px; }
+
+    /* Form input & select styles */
+    .text-input-styled {
+      padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color);
+      border-radius: 6px; width: 320px; max-width: 100%; font-family: 'JetBrains Mono', Consolas, monospace;
+      outline: none; transition: border-color 0.15s;
+    }
+    .text-input-styled:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+
+    .select-styled {
+      padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color);
+      border-radius: 6px; background-color: white; font-family: 'JetBrains Mono', Consolas, monospace;
+      min-width: 200px; cursor: pointer; outline: none; transition: border-color 0.15s;
+    }
+    .select-styled:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+
+    /* Clean images matching LMS without borders or shadows */
+    .que img {
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      outline: none !important;
+      max-width: 100%;
+      height: auto;
+    }
+
+    pre.asm-code {
+      font-family: 'JetBrains Mono', Consolas, monospace; background: var(--code-bg); color: var(--code-color);
+      padding: 12px 16px; border-radius: 6px; font-size: 13px; line-height: 1.5; overflow-x: auto; margin: 8px 0;
+    }
+
+    /* Moodle Pagination Controls */
+    .submitbtns.moodle-nav-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 16px 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-top: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .page-indicator-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    /* Sidebar Navigation */
+    .quiz-nav-sidebar {
+      position: sticky; top: 80px; background: white; border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); max-height: calc(100vh - 100px); overflow-y: auto;
+    }
+    .quiz-nav-sidebar h4 {
+      font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .quiz-nav-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px;
+    }
+    .quiz-nav-btn {
+      aspect-ratio: 1; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155;
+      font-weight: 600; font-size: 12px; border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.15s;
+    }
+    .quiz-nav-btn:hover { background: #e2e8f0; }
+    .quiz-nav-btn.answered { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; }
+    .quiz-nav-btn.current-page {
+      border: 2px solid #0284c7 !important;
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+  
+    
+
+  
+    
+
+  
+    
+
+  
+    
+
+  
+    /* === UNIFIED MOODLE HEADER CSS === */
+    header.site-header {
+      background: #ffffff;
+      border-bottom: 2px solid var(--primary, #0284c7);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: nowrap;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #0284c7, #1e3a8a);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .brand-title h1 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #0f172a;
+      text-transform: uppercase;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .brand-title p {
+      font-size: 11.5px;
+      color: var(--text-muted, #64748b);
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    /* Exam switcher dropdown styling */
+    .exam-switcher-container {
+      position: relative;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .exam-switcher-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #0f172a;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .exam-switcher-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    .switcher-icon { font-size: 16px; }
+    .switcher-arrow { color: #64748b; font-size: 12px; transition: transform 0.2s; }
+    .exam-switcher-container.open .switcher-arrow { transform: rotate(180deg); }
+
+    .exam-switcher-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 340px;
+      width: max-content;
+      max-width: min(420px, 92vw);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      box-shadow: 0 12px 28px -4px rgba(0,0,0,0.18), 0 8px 10px -6px rgba(0,0,0,0.1);
+      z-index: 2000;
+      overflow: hidden;
+    }
+
+    .switcher-menu-header {
+      background: #f8fafc;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hub-link-chip {
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .hub-link-chip:hover { text-decoration: underline; }
+
+    .switcher-items-list {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .switcher-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      text-decoration: none;
+      color: #1e293b;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s;
+    }
+    .switcher-item:hover { background: #f8fafc; }
+    .switcher-item.active { background: #f0f9ff; border-left: 3px solid #0284c7; }
+
+    .switcher-badge {
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .switcher-item.active .switcher-badge { background: #0284c7; color: white; }
+
+    .switcher-name { font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3; }
+    .current-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 4px;
+    }
+    .switcher-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .view-mode-toggle {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 6px;
+      gap: 4px;
+    }
+
+    .view-mode-btn {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #475569;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .view-mode-btn.active {
+      background: white;
+      color: #0284c7;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 6px 13px; font-size: 12.5px; font-weight: 500; border-radius: 6px;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary, #0284c7); color: white; }
+    .btn-primary:hover { background: var(--primary-hover, #0369a1); }
+    .btn-outline { border-color: var(--border-color, #cbd5e1); background: white; color: #334155; }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    /* Single Question per page mode styling */
+    body.single-question-mode .que {
+      display: none !important;
+    }
+    body.single-question-mode .que.current-page {
+      display: grid !important;
+    }
+
+  </style>
+</head>
+<body class="single-question-mode">
+
+          <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <div class="brand-logo">UTE</div>
+        <div class="brand-title">
+          <h1>HCMUTE - LMS Hệ Thống Thi Trực Tuyến</h1>
+          <p>Trường Đại Học Sư Phạm Kỹ Thuật TP. Hồ Chí Minh</p>
+        </div>
+      </div>
+
+      <div class="exam-switcher-container">
+        <button type="button" class="exam-switcher-btn" id="examSwitcherToggle" onclick="toggleExamSwitcher(event)" aria-haspopup="true" aria-expanded="false">
+          <span class="switcher-icon">📚</span>
+          <span class="switcher-btn-text"><strong>Đề 2: Cuối Kỳ Môn KTMT 2019 - Đề 2</strong></span>
+          <span class="switcher-arrow">▾</span>
+        </button>
+        <div class="exam-switcher-menu" id="examSwitcherMenu" style="display: none;">
+          <div class="switcher-menu-header">
+            <span>DANH SÁCH 9 BỘ ĐỀ THI KTMT</span>
+            <a href="index.html" class="hub-link-chip">🏠 Trang tổng hợp</a>
+          </div>
+          <div class="switcher-items-list">
+        <a href="moodle-ktmt-quiz.html" class="switcher-item">
+          <span class="switcher-badge">Đề 1</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Cuối Kỳ KTMT & Hợp Ngữ 2019</div>
+            <div class="switcher-meta">50 câu • Đề thi trắc nghiệm cuối kỳ năm 2019</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-2019-exam.html" class="switcher-item active">
+          <span class="switcher-badge">Đề 2</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Cuối Kỳ Môn KTMT 2019 (Đề 2) <span class="current-tag">Đang mở</span></div>
+            <div class="switcher-meta">45 câu • Đề thi chính thức môn KTMT & Hợp ngữ</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-k15-exam.html" class="switcher-item">
+          <span class="switcher-badge">Đề 3</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Bài Thi KTMT K15 Trắc Nghiệm (Đề 1)</div>
+            <div class="switcher-meta">45 câu • Bộ đề thi KTMT cuối kỳ đề 1 khóa K15</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-k15-de2.html" class="switcher-item">
+          <span class="switcher-badge">Đề 4</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Kiểm Tra Cuối Kỳ Đề 2 - K15</div>
+            <div class="switcher-meta">45 câu • Đề thi cuối kỳ đề 2 dành cho sinh viên K15</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-lopchan-2019.html" class="switcher-item">
+          <span class="switcher-badge">Đề 5</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Thi KTMT & Hợp Ngữ Lớp Chẵn 2019</div>
+            <div class="switcher-meta">45 câu • Đề thi cuối kỳ dành cho lớp chẵn 2019</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-midterm-gk.html" class="switcher-item">
+          <span class="switcher-badge">Đề 6</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Online Mid Term Test No-2 HK1 2023-2024</div>
+            <div class="switcher-meta">40 câu • Đề thi giữa kỳ môn Kiến trúc máy tính HK1</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-thichung-2018.html" class="switcher-item">
+          <span class="switcher-badge">Đề 7</span>
+          <div class="switcher-text">
+            <div class="switcher-name">THI KTMT & Hợp Ngữ - Thi Chung 2018</div>
+            <div class="switcher-meta">42 câu • Kỳ thi chung môn Kiến trúc máy tính & Hợp ngữ</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-clc-2017.html" class="switcher-item">
+          <span class="switcher-badge">Đề 8</span>
+          <div class="switcher-text">
+            <div class="switcher-name">KTMT & Hợp Ngữ - Nhóm CLC 2017</div>
+            <div class="switcher-meta">53 câu • Đề thi Nhóm 06 07 08CLC Chất Lượng Cao</div>
+          </div>
+        </a>
+        <a href="moodle-ktmt-quiz-clc-2017.html" class="switcher-item">
+          <span class="switcher-badge">Đề 9</span>
+          <div class="switcher-text">
+            <div class="switcher-name">Quiz KTMT & Hợp Ngữ - Nhóm CLC 2017</div>
+            <div class="switcher-meta">24 câu • Bài kiểm tra nhanh (Quiz 10 phút) Nhóm CLC 2017</div>
+          </div>
+        </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar-actions">
+        <div class="view-mode-toggle">
+          <button type="button" class="view-mode-btn active" id="btn-mode-single" onclick="setMode(true)">1 Câu / Trang</button>
+          <button type="button" class="view-mode-btn" id="btn-mode-all" onclick="setMode(false)">Xem Tất Cả 45 Câu</button>
+        </div>
+        <button type="button" class="btn btn-outline" id="btn-reset-all" onclick="resetForm()">Reset All</button>
+        <button type="button" class="btn btn-primary" id="btn-detect-test" onclick="triggerDetectTest()">Quét Detect Test</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="breadcrumb-nav">
+    <a href="#">Nhà của tôi</a><span>›</span>
+    <a href="#">Các khóa học của tôi</a><span>›</span>
+    <a href="#">KT_KTMT</a><span>›</span>
+    <span>Bài Thi Cuối Kỳ Môn Kiến Trúc Máy Tính và Hợp Ngữ 2019 (Full 45 Câu)</span>
+  </div>
+
+  <div class="layout-container">
+    <main id="page-content">
+      <div class="exam-header-card">
+        <h2>Thi Online KTMT&HN nhóm lẻ - Bài Thi Cuối Kỳ 2019</h2>
+        <table class="exam-meta-table">
+          <tr><td class="cell-label">Môn học:</td><td>Kiến trúc máy tính &amp; Hợp ngữ (Trường ĐH Sư phạm Kỹ thuật TP.HCM)</td></tr>
+          <tr><td class="cell-label">Tổng số câu hỏi:</td><td><strong>45 câu hỏi</strong> (Trắc nghiệm đơn, nhiều lựa chọn, dropdown matching, điền text/số)</td></tr>
+          <tr><td class="cell-label">Thời gian làm bài:</td><td>75 phút</td></tr>
+          <tr><td class="cell-label">Chế độ hiển thị:</td><td id="display-mode-text">1 câu hỏi / 1 trang (Moodle Standard Pagination)</td></tr>
+        </table>
+      </div>
+
+      <form id="responseform" method="post" action="#" onsubmit="return false;">
+
+    <div class='que current-page' id='q1'>
+      <div class='info'>
+        <h3 class='no'>1</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>In multiplication instruction, the upper half of the result is nonzero implies which state of Carry flag and Overflow flag?</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q1_ans[]' id='q1_a' value='A'>
+                <label for='q1_a'><span class='answernumber'>a. </span><span>OF=1</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q1_ans[]' id='q1_b' value='B'>
+                <label for='q1_b'><span class='answernumber'>b. </span><span>CF=1</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q1_ans[]' id='q1_c' value='C'>
+                <label for='q1_c'><span class='answernumber'>c. </span><span>OF=0</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q1_ans[]' id='q1_d' value='D'>
+                <label for='q1_d'><span class='answernumber'>d. </span><span>CF=0</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q2'>
+      <div class='info'>
+        <h3 class='no'>2</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which is correct about dual-layer DVD?</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q2_ans' id='q2_a' value='A'>
+                <label for='q2_a'><span class='answernumber'>a. </span><span>the same as double-sided DVD</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q2_ans' id='q2_b' value='B'>
+                <label for='q2_b'><span class='answernumber'>b. </span><span>contains layers on both sides of the disk for writing data to</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q2_ans' id='q2_c' value='C'>
+                <label for='q2_c'><span class='answernumber'>c. </span><span>contains two layers on a single side for writing data to</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q2_ans' id='q2_d' value='D'>
+                <label for='q2_d'><span class='answernumber'>d. </span><span>DVD drives has double laser head for reading from or writing to this disk</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q3'>
+      <div class='info'>
+        <h3 class='no'>3</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>For better speed, in CPU design, engineers make use of the following techniques:</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q3_ans[]' id='q3_a' value='A'>
+                <label for='q3_a'><span class='answernumber'>a. </span><span>Pipelining</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q3_ans[]' id='q3_b' value='B'>
+                <label for='q3_b'><span class='answernumber'>b. </span><span>Branch prediction</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q3_ans[]' id='q3_c' value='C'>
+                <label for='q3_c'><span class='answernumber'>c. </span><span>Faster CPU internal bus</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q3_ans[]' id='q3_d' value='D'>
+                <label for='q3_d'><span class='answernumber'>d. </span><span>Speculative execution</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q4'>
+      <div class='info'>
+        <h3 class='no'>4</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Consider the following assembly instruction sequence
+<pre class="asm-code">XOR BX, BX
+CMP DL, 5
+JLE a_label
+CMP DL, 17h
+JGE a_label
+MOV BX, 10h
+a_label:
+INC BX
+watch point:
+...</pre>
+Choose correct value of BX register at watch point for different value of DL?</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>DL=0Ah</span>
+                <select id='q4_sel_1' name='q4_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='00h'>00h</option><option value='01h'>01h</option><option value='10h'>10h</option><option value='11h'>11h</option><option value='17h'>17h</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>DL=0FFh</span>
+                <select id='q4_sel_2' name='q4_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='00h'>00h</option><option value='01h'>01h</option><option value='10h'>10h</option><option value='11h'>11h</option><option value='17h'>17h</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>DL=10</span>
+                <select id='q4_sel_3' name='q4_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='00h'>00h</option><option value='01h'>01h</option><option value='10h'>10h</option><option value='11h'>11h</option><option value='17h'>17h</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>DL=17h</span>
+                <select id='q4_sel_4' name='q4_sel_4' class='form-select select-styled'><option value=''>Choose...</option><option value='00h'>00h</option><option value='01h'>01h</option><option value='10h'>10h</option><option value='11h'>11h</option><option value='17h'>17h</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q5'>
+      <div class='info'>
+        <h3 class='no'>5</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Consider a 16-bit microprocessor, with a 16-bit external data bus, driven by an 10-MHz input clock. Assume that this microprocessor has a bus cycle whose minimum duration equals four input clock cycles. What is the maximum data transfer rate across the bus that this microprocessor can sustain?</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q5_ans' id='q5_a' value='A'>
+                <label for='q5_a'><span class='answernumber'>a. </span><span>4 MB/s</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q5_ans' id='q5_b' value='B'>
+                <label for='q5_b'><span class='answernumber'>b. </span><span>1 MB/s</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q5_ans' id='q5_c' value='C'>
+                <label for='q5_c'><span class='answernumber'>c. </span><span>5 MB/s</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q5_ans' id='q5_d' value='D'>
+                <label for='q5_d'><span class='answernumber'>d. </span><span>10 MB/s</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q6'>
+      <div class='info'>
+        <h3 class='no'>6</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Select correct definition of seek time, rotational delay, access time, transfer time for hard drives with moveable-head system:</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>rotational delay</span>
+                <select id='q6_sel_1' name='q6_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='time for the sector in the request track to reach the head'>time for the sector in the request track to reach the head</option><option value='time for the head to settle at the request track'>time for the head to settle at the request track</option><option value='access time + settle time'>access time + settle time</option><option value='time to transfer data across bus'>time to transfer data across bus</option><option value='seek time + rotational delay'>seek time + rotational delay</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>seek time</span>
+                <select id='q6_sel_2' name='q6_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='time for the sector in the request track to reach the head'>time for the sector in the request track to reach the head</option><option value='time for the head to settle at the request track'>time for the head to settle at the request track</option><option value='access time + settle time'>access time + settle time</option><option value='time to transfer data across bus'>time to transfer data across bus</option><option value='seek time + rotational delay'>seek time + rotational delay</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>access time</span>
+                <select id='q6_sel_3' name='q6_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='time for the sector in the request track to reach the head'>time for the sector in the request track to reach the head</option><option value='time for the head to settle at the request track'>time for the head to settle at the request track</option><option value='access time + settle time'>access time + settle time</option><option value='seek time + rotational delay'>seek time + rotational delay</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q7'>
+      <div class='info'>
+        <h3 class='no'>7</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which are the correct actions for LODSW string operation if DF is reset (=0)</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q7_ans[]' id='q7_a' value='A'>
+                <label for='q7_a'><span class='answernumber'>a. </span><span>decrease DI by 2</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q7_ans[]' id='q7_b' value='B'>
+                <label for='q7_b'><span class='answernumber'>b. </span><span>Load 16-bit value at memory location pointed by ES:[DI] into AX</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q7_ans[]' id='q7_c' value='C'>
+                <label for='q7_c'><span class='answernumber'>c. </span><span>Load 16-bit value at memory location pointed by DS:[SI] into AX</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q7_ans[]' id='q7_d' value='D'>
+                <label for='q7_d'><span class='answernumber'>d. </span><span>increase SI by 2</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q8'>
+      <div class='info'>
+        <h3 class='no'>8</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>In computer organization, the CPU transfer rate is much higher than that of memory. It is easy to match performance of these components by:</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q8_ans' id='q8_a' value='A'>
+                <label for='q8_a'><span class='answernumber'>a. </span><span>increase the bus speed</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q8_ans' id='q8_b' value='B'>
+                <label for='q8_b'><span class='answernumber'>b. </span><span>producing faster memory module</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q8_ans' id='q8_c' value='C'>
+                <label for='q8_c'><span class='answernumber'>c. </span><span>Introducing cache memory</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q8_ans' id='q8_d' value='D'>
+                <label for='q8_d'><span class='answernumber'>d. </span><span>increase I/O speed</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q9'>
+      <div class='info'>
+        <h3 class='no'>9</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>For memory hierarchy below, which relationship hold when moving downward
+<div style="margin: 15px 0; text-align: center;">
+  <img src="images/q9-memory-hierarchy.png" alt="Memory Hierarchy Pyramid" style="max-width: 440px; width: 100%; height: auto; display: inline-block;">
+</div></div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q9_ans[]' id='q9_a' value='A'>
+                <label for='q9_a'><span class='answernumber'>a. </span><span>Decreasing cost per bit</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q9_ans[]' id='q9_b' value='B'>
+                <label for='q9_b'><span class='answernumber'>b. </span><span>the processor accesses more often</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q9_ans[]' id='q9_c' value='C'>
+                <label for='q9_c'><span class='answernumber'>c. </span><span>Increasing access time</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q9_ans[]' id='q9_d' value='D'>
+                <label for='q9_d'><span class='answernumber'>d. </span><span>Decreasing frequency of access by the processor</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q9_ans[]' id='q9_e' value='E'>
+                <label for='q9_e'><span class='answernumber'>e. </span><span>Increasing capacity</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q10'>
+      <div class='info'>
+        <h3 class='no'>10</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which of the following instructions are not valid?</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q10_ans[]' id='q10_a' value='A'>
+                <label for='q10_a'><span class='answernumber'>a. </span><span>MOV DS, B800h</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q10_ans[]' id='q10_b' value='B'>
+                <label for='q10_b'><span class='answernumber'>b. </span><span>MOV AX, SI</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q10_ans[]' id='q10_c' value='C'>
+                <label for='q10_c'><span class='answernumber'>c. </span><span>MOV AX, [BP+2]</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q10_ans[]' id='q10_d' value='D'>
+                <label for='q10_d'><span class='answernumber'>d. </span><span>MOV SP, SS:[SI+2]</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q11'>
+      <div class='info'>
+        <h3 class='no'>11</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Sign-extend number 1011 0101 (8-bit binary) to 16-bit</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q11_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q11_text' name='q11_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q12'>
+      <div class='info'>
+        <h3 class='no'>12</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>The principle of cache memory relies on key features: locality of reference which involves spatial and temporal locality. Match the definition to keywords on the left</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Temporal locality</span>
+                <select id='q12_sel_1' name='q12_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='the tendency for a processor to access memory locations that have been used recently'>the tendency for a processor to access memory locations that have been used recently</option><option value='the tendency of execution to involve a number of memory locations that are clustered'>the tendency of execution to involve a number of memory locations that are clustered</option><option value='tendency to use large cache and prefetch mechanism'>tendency to use large cache and prefetch mechanism</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Spatial locality</span>
+                <select id='q12_sel_2' name='q12_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='the tendency for a processor to access memory locations that have been used recently'>the tendency for a processor to access memory locations that have been used recently</option><option value='the tendency of execution to involve a number of memory locations that are clustered'>the tendency of execution to involve a number of memory locations that are clustered</option><option value='tendency to use large cache and prefetch mechanism'>tendency to use large cache and prefetch mechanism</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q13'>
+      <div class='info'>
+        <h3 class='no'>13</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which ones are not correct for static RAM?</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q13_ans[]' id='q13_a' value='A'>
+                <label for='q13_a'><span class='answernumber'>a. </span><span>faster than dynamic RAM because they are made from capacitor</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q13_ans[]' id='q13_b' value='B'>
+                <label for='q13_b'><span class='answernumber'>b. </span><span>Cheaper than dynamic RAM because simpler chip controller</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q13_ans[]' id='q13_c' value='C'>
+                <label for='q13_c'><span class='answernumber'>c. </span><span>Cost per bit is higher than dynamic RAM</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q13_ans[]' id='q13_d' value='D'>
+                <label for='q13_d'><span class='answernumber'>d. </span><span>Cost per bit is lower than dynamic RAM</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q14'>
+      <div class='info'>
+        <h3 class='no'>14</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which of the following instructions are not legal addressing?</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q14_ans[]' id='q14_a' value='A'>
+                <label for='q14_a'><span class='answernumber'>a. </span><span>MOV AX, [DI]</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q14_ans[]' id='q14_b' value='B'>
+                <label for='q14_b'><span class='answernumber'>b. </span><span>MOV CX, [SI]</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q14_ans[]' id='q14_c' value='C'>
+                <label for='q14_c'><span class='answernumber'>c. </span><span>MOV AX, [BX+SP]</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q14_ans[]' id='q14_d' value='D'>
+                <label for='q14_d'><span class='answernumber'>d. </span><span>MOV AX, [SP+1]</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q15'>
+      <div class='info'>
+        <h3 class='no'>15</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Structural components of computer include:</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q15_ans[]' id='q15_a' value='A'>
+                <label for='q15_a'><span class='answernumber'>a. </span><span>I/O</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q15_ans[]' id='q15_b' value='B'>
+                <label for='q15_b'><span class='answernumber'>b. </span><span>DMA</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q15_ans[]' id='q15_c' value='C'>
+                <label for='q15_c'><span class='answernumber'>c. </span><span>System interconnection</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q15_ans[]' id='q15_d' value='D'>
+                <label for='q15_d'><span class='answernumber'>d. </span><span>Interrupt</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q15_ans[]' id='q15_e' value='E'>
+                <label for='q15_e'><span class='answernumber'>e. </span><span>Central processing unit</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q15_ans[]' id='q15_f' value='F'>
+                <label for='q15_f'><span class='answernumber'>f. </span><span>Memory</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q16'>
+      <div class='info'>
+        <h3 class='no'>16</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>A memory chip has 12 address pins, determine the maximum memory words of this chip?</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q16_ans' id='q16_a' value='A'>
+                <label for='q16_a'><span class='answernumber'>a. </span><span>4096</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q16_ans' id='q16_b' value='B'>
+                <label for='q16_b'><span class='answernumber'>b. </span><span>2048</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q16_ans' id='q16_c' value='C'>
+                <label for='q16_c'><span class='answernumber'>c. </span><span>2048K</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q16_ans' id='q16_d' value='D'>
+                <label for='q16_d'><span class='answernumber'>d. </span><span>4000</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q17'>
+      <div class='info'>
+        <h3 class='no'>17</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Consider a magnetic disk drive with 8 surfaces, 512 tracks per surface, and 64 sectors per track. Sector size is 1 kB. What is the disk capacity</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q17_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q17_text' name='q17_text' class='form-control text-input-styled' placeholder='Điền đáp án...'> <span style='font-weight:600; margin-left:6px;'>KB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q18'>
+      <div class='info'>
+        <h3 class='no'>18</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Choose correct features for SRAM and DRAM</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>SRAM</span>
+                <select id='q18_sel_1' name='q18_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='Faster access time, cost more per bit, smaller size'>Faster access time, cost more per bit, smaller size</option><option value='Slower access time, cheaper cost per bit, can manufacture with larger size'>Slower access time, cheaper cost per bit, can manufacture with larger size</option><option value='Faster access time, cheaper cost per bit, larger size'>Faster access time, cheaper cost per bit, larger size</option><option value='Slower access time, cost more per bit, smaller size'>Slower access time, cost more per bit, smaller size</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>DRAM</span>
+                <select id='q18_sel_2' name='q18_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='Faster access time, cost more per bit, smaller size'>Faster access time, cost more per bit, smaller size</option><option value='Slower access time, cheaper cost per bit, can manufacture with larger size'>Slower access time, cheaper cost per bit, can manufacture with larger size</option><option value='Faster access time, cheaper cost per bit, larger size'>Faster access time, cheaper cost per bit, larger size</option><option value='Slower access time, cost more per bit, smaller size'>Slower access time, cost more per bit, smaller size</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q19'>
+      <div class='info'>
+        <h3 class='no'>19</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>The following sequence of instructions are executed. What is the correct value of AX, CX, DX at watch point?
+<pre class="asm-code">MOV AX,0020
+MOV CX,0010
+MUL CL
+watch point:</pre></div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>DX</span>
+                <select id='q19_sel_1' name='q19_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='0000'>0000</option><option value='0010'>0010</option><option value='0020'>0020</option><option value='0200'>0200</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>AX =</span>
+                <select id='q19_sel_2' name='q19_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='0000'>0000</option><option value='0010'>0010</option><option value='0020'>0020</option><option value='0200'>0200</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>CX =</span>
+                <select id='q19_sel_3' name='q19_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='0000'>0000</option><option value='0010'>0010</option><option value='0020'>0020</option><option value='0200'>0200</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q20'>
+      <div class='info'>
+        <h3 class='no'>20</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which statements are correct for HDDs?</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q20_ans[]' id='q20_a' value='A'>
+                <label for='q20_a'><span class='answernumber'>a. </span><span>a. Bits are store randomly on disk surfaces</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q20_ans[]' id='q20_b' value='B'>
+                <label for='q20_b'><span class='answernumber'>b. </span><span>b. Head, Track, Cylinder are key parameters for access data on hard disk</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q20_ans[]' id='q20_c' value='C'>
+                <label for='q20_c'><span class='answernumber'>c. </span><span>c. Bits are stored on tracks</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q20_ans[]' id='q20_d' value='D'>
+                <label for='q20_d'><span class='answernumber'>d. </span><span>d. Head, Track, Sector are key parameters for access data on hard disk</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q21'>
+      <div class='info'>
+        <h3 class='no'>21</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which are the correct inputs for XLAT instruction</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q21_ans[]' id='q21_a' value='A'>
+                <label for='q21_a'><span class='answernumber'>a. </span><span>look-up index must be loaded into DL</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q21_ans[]' id='q21_b' value='B'>
+                <label for='q21_b'><span class='answernumber'>b. </span><span>DS:[BX] pointed to look-up table</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q21_ans[]' id='q21_c' value='C'>
+                <label for='q21_c'><span class='answernumber'>c. </span><span>look-up index must be loaded into AL</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q21_ans[]' id='q21_d' value='D'>
+                <label for='q21_d'><span class='answernumber'>d. </span><span>DS:[SI] pointed to look-up table</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q22'>
+      <div class='info'>
+        <h3 class='no'>22</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>What is the correct value of SI, AL (in hex) at watch point:
+<pre class="asm-code">01: MOV SI, 300h
+02: MOV AL, 10h
+03: MOV CX, 7
+04: Loop_label:
+05: MOV [SI], AL
+06: ADD AL,10h
+07: INC SI
+08: LOOP Loop_label
+watch point:</pre></div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>SI</span>
+                <select id='q22_sel_1' name='q22_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='300h'>300h</option><option value='306h'>306h</option><option value='307h'>307h</option><option value='308h'>308h</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>AL =</span>
+                <select id='q22_sel_2' name='q22_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='10h'>10h</option><option value='70h'>70h</option><option value='80h'>80h</option><option value='90h'>90h</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q23'>
+      <div class='info'>
+        <h3 class='no'>23</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>To evaluate processor performance, the following indicators and formulas are used:
+<div class="formula-box" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin: 12px 0 16px; font-family: 'Inter', -apple-system, sans-serif; max-width: 580px;">
+  <div style="display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; align-items: center; font-size: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #334155;">Cycles per instruction</div>
+    <div style="font-family: 'Cambria Math', 'Times New Roman', serif; font-size: 15px; font-style: italic; color: #0f172a;">
+      CPI = <span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 13px; padding: 0 4px;">
+        <span style="border-bottom: 1px solid #0f172a; padding-bottom: 1px;">&sum;<sub>i=1</sub><sup>n</sup> (CPI<sub>i</sub> &times; I<sub>i</sub>)</span>
+        <span style="padding-top: 1px;">I<sub>c</sub></span>
+      </span>
+    </div>
+
+    <div style="font-weight: 600; color: #334155;">Time to execute a program</div>
+    <div style="font-family: 'Cambria Math', 'Times New Roman', serif; font-size: 15px; font-style: italic; color: #0f172a;">
+      T = I<sub>c</sub> &times; CPI &times; &tau;
+    </div>
+
+    <div style="font-weight: 600; color: #334155;">Or</div>
+    <div style="font-family: 'Cambria Math', 'Times New Roman', serif; font-size: 15px; font-style: italic; color: #0f172a;">
+      T = I<sub>c</sub> &times; [p + (m &times; k)] &times; &tau;
+    </div>
+  </div>
+
+  <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px; font-size: 12.5px; line-height: 1.6; color: #475569;">
+    <div style="font-weight: 600; color: #1e293b; margin-bottom: 2px;">In which:</div>
+    <div><strong>p:</strong> the number of processor cycles needed to decode and execute the instruction</div>
+    <div><strong>m:</strong> the number of memory references needed</div>
+    <div><strong>k:</strong> the ratio between memory cycle time and processor cycle time</div>
+    <div><strong>&tau;:</strong> cycle time = 1/f</div>
+  </div>
+</div>
+<p>Which of the following system attributes affects cycle time &tau;?</p></div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q23_ans[]' id='q23_a' value='A'>
+                <label for='q23_a'><span class='answernumber'>a. </span><span>Instruction set architecture</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q23_ans[]' id='q23_b' value='B'>
+                <label for='q23_b'><span class='answernumber'>b. </span><span>Cache and memory hierarchy</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q23_ans[]' id='q23_c' value='C'>
+                <label for='q23_c'><span class='answernumber'>c. </span><span>Compiler technology</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q23_ans[]' id='q23_d' value='D'>
+                <label for='q23_d'><span class='answernumber'>d. </span><span>Processor implementation</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q24'>
+      <div class='info'>
+        <h3 class='no'>24</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>To encrypt a byte value, use __________ instruction.</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q24_ans' id='q24_a' value='A'>
+                <label for='q24_a'><span class='answernumber'>a. </span><span>XOR</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q24_ans' id='q24_b' value='B'>
+                <label for='q24_b'><span class='answernumber'>b. </span><span>AND</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q24_ans' id='q24_c' value='C'>
+                <label for='q24_c'><span class='answernumber'>c. </span><span>NOT</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q24_ans' id='q24_d' value='D'>
+                <label for='q24_d'><span class='answernumber'>d. </span><span>OR</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q25'>
+      <div class='info'>
+        <h3 class='no'>25</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>In multiplication instruction, when the source operand is 8 bit, _________ will be multiplied with source.</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q25_ans' id='q25_a' value='A'>
+                <label for='q25_a'><span class='answernumber'>a. </span><span>AX</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q25_ans' id='q25_b' value='B'>
+                <label for='q25_b'><span class='answernumber'>b. </span><span>AL</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q25_ans' id='q25_c' value='C'>
+                <label for='q25_c'><span class='answernumber'>c. </span><span>Whatever general purpose register</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q25_ans' id='q25_d' value='D'>
+                <label for='q25_d'><span class='answernumber'>d. </span><span>BX</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q26'>
+      <div class='info'>
+        <h3 class='no'>26</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,50 trên 1,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>A system programmer needs to compute 449/2+358/4 (decimal). Instruct him to code in debug (number must be in hex) with the least number of instruction counts.</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 1:</span>
+                <select id='q26_sel_1' name='q26_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='MOV AX,166'>MOV AX,166</option><option value='MOV AX,01C1'>MOV AX,01C1</option><option value='MOV AX,01BC'>MOV AX,01BC</option><option value='MOV AX,449'>MOV AX,449</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 2:</span>
+                <select id='q26_sel_2' name='q26_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='MOV CL,1'>MOV CL,1</option><option value='MOV CL,2'>MOV CL,2</option><option value='SHR AX,1'>SHR AX,1</option><option value='SHR AX,2'>SHR AX,2</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 3:</span>
+                <select id='q26_sel_3' name='q26_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='SHR AX,CL'>SHR AX,CL</option><option value='SHR AX,1'>SHR AX,1</option><option value='SAR AX,CL'>SAR AX,CL</option><option value='DIV CL'>DIV CL</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 4:</span>
+                <select id='q26_sel_4' name='q26_sel_4' class='form-select select-styled'><option value=''>Choose...</option><option value='MOV BX,AX'>MOV BX,AX</option><option value='PUSH AX'>PUSH AX</option><option value='MOV DX,AX'>MOV DX,AX</option><option value='ADD BX,AX'>ADD BX,AX</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 5:</span>
+                <select id='q26_sel_5' name='q26_sel_5' class='form-select select-styled'><option value=''>Choose...</option><option value='MOV AX,01BC'>MOV AX,01BC</option><option value='MOV AX,166'>MOV AX,166</option><option value='MOV AX,01C1'>MOV AX,01C1</option><option value='MOV AX,358'>MOV AX,358</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 6:</span>
+                <select id='q26_sel_6' name='q26_sel_6' class='form-select select-styled'><option value=''>Choose...</option><option value='ADD AX,BX'>ADD AX,BX</option><option value='SHR AX,1'>SHR AX,1</option><option value='ADD BX,AX'>ADD BX,AX</option><option value='SUB AX,BX'>SUB AX,BX</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q27'>
+      <div class='info'>
+        <h3 class='no'>27</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Convert 0.1015625 to IEEE 32-bit floating point format (1 sign+ 8 exponent + 23 mantissa)</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q27_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q27_text' name='q27_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q28'>
+      <div class='info'>
+        <h3 class='no'>28</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>The instruction that loads the AH register with the lower byte of the flag register is</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q28_ans' id='q28_a' value='A'>
+                <label for='q28_a'><span class='answernumber'>a. </span><span>LAHF</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q28_ans' id='q28_b' value='B'>
+                <label for='q28_b'><span class='answernumber'>b. </span><span>PUSHF</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q28_ans' id='q28_c' value='C'>
+                <label for='q28_c'><span class='answernumber'>c. </span><span>AH</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q28_ans' id='q28_d' value='D'>
+                <label for='q28_d'><span class='answernumber'>d. </span><span>SAHF</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q29'>
+      <div class='info'>
+        <h3 class='no'>29</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>The following sequence of instructions are executed. What is the correct value of flag bits at watch point?
+<pre class="asm-code">MOV AL, 0F
+ADD AL, F1
+watch point:</pre></div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Zero flag (ZF) =</span>
+                <select id='q29_sel_1' name='q29_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='set'>set</option><option value='reset'>reset</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Carry flag (CF) =</span>
+                <select id='q29_sel_2' name='q29_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='set'>set</option><option value='reset'>reset</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q30'>
+      <div class='info'>
+        <h3 class='no'>30</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,50 trên 1,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Which are correct about 32 bit index registers of IA-32 processors:</div><div class='prompt'>Select one or more:</div><div class='answer'>
+              <div class='r0'>
+                <input type='checkbox' name='q30_ans[]' id='q30_a' value='A'>
+                <label for='q30_a'><span class='answernumber'>a. </span><span>ESI: 32 bit pointer to source memory in data movement instructions</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q30_ans[]' id='q30_b' value='B'>
+                <label for='q30_b'><span class='answernumber'>b. </span><span>ESH,EDH: 16 bit pointers to higher memory above 1M</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q30_ans[]' id='q30_c' value='C'>
+                <label for='q30_c'><span class='answernumber'>c. </span><span>SI: 16 bit pointer to source memory in data movement instructions</span></label>
+              </div>
+              <div class='r1'>
+                <input type='checkbox' name='q30_ans[]' id='q30_d' value='D'>
+                <label for='q30_d'><span class='answernumber'>d. </span><span>EDI: 32 bit pointer to destination memory in data movement instructions</span></label>
+              </div>
+              <div class='r0'>
+                <input type='checkbox' name='q30_ans[]' id='q30_e' value='E'>
+                <label for='q30_e'><span class='answernumber'>e. </span><span>DI: 16 bit pointer to destination memory in data movement instructions</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q31'>
+      <div class='info'>
+        <h3 class='no'>31</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Select the correct sequence of instructions to compute -1024/128 (all values are in hex).</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 1:</span>
+                <select id='q31_sel_1' name='q31_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='MOV AX,FC00'>MOV AX,FC00</option><option value='MOV AX,0400'>MOV AX,0400</option><option value='MOV EAX,FC00'>MOV EAX,FC00</option><option value='MOV AX,1024'>MOV AX,1024</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 2:</span>
+                <select id='q31_sel_2' name='q31_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='MOV CX,80'>MOV CX,80</option><option value='MOV CX,0080'>MOV CX,0080</option><option value='MOV BX,80'>MOV BX,80</option><option value='MOV CL,80'>MOV CL,80</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 3:</span>
+                <select id='q31_sel_3' name='q31_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='CWD'>CWD</option><option value='CBW'>CBW</option><option value='CDQ'>CDQ</option><option value='NEG AX'>NEG AX</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 4:</span>
+                <select id='q31_sel_4' name='q31_sel_4' class='form-select select-styled'><option value=''>Choose...</option><option value='IDIV CX'>IDIV CX</option><option value='DIV CX'>DIV CX</option><option value='IDIV CL'>IDIV CL</option><option value='DIV CL'>DIV CL</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q32'>
+      <div class='info'>
+        <h3 class='no'>32</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,50 trên 1,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>A benchmark program is run on a 40 MHz processor. The executed program consists of 100,000 instruction executions, with the following instruction mix and clock cycle count:
+<div style="margin: 12px 0; overflow-x: auto;">
+  <table style="border-collapse: collapse; font-family: 'Inter', -apple-system, sans-serif; font-size: 13.5px; border: 1px solid #cbd5e1; text-align: left; max-width: 540px; width: 100%;">
+    <thead>
+      <tr style="background: #f1f5f9; border-bottom: 2px solid #94a3b8;">
+        <th style="padding: 8px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">Instruction Type</th>
+        <th style="padding: 8px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1; text-align: right;">Instruction Count</th>
+        <th style="padding: 8px 14px; font-weight: 700; color: #0f172a; text-align: right;">Cycles per Instruction</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Integer arithmetic</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">45,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">1</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Data transfer</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">32,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">2</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Floating point</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">15,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">2</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Control transfer</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">8,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">2</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p style="margin: 12px 0 6px;">Calculate MIPS rate for this program</p>
+<div class="formula-box" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 18px; margin: 10px 0 14px; font-family: 'Cambria Math', 'Times New Roman', serif; max-width: 540px;">
+  <div style="font-weight: 700; font-family: 'Inter', sans-serif; font-size: 13px; color: #334155; margin-bottom: 8px;">Given formulas:</div>
+  <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px; font-style: italic; color: #0f172a;">
+    <div>
+      MIPS rate = <span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 13px; padding: 0 4px;">
+        <span style="border-bottom: 1px solid #0f172a; padding-bottom: 1px;">I<sub>c</sub></span>
+        <span style="padding-top: 1px;">T &times; 10<sup>6</sup></span>
+      </span> = <span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 13px; padding: 0 4px;">
+        <span style="border-bottom: 1px solid #0f172a; padding-bottom: 1px;">f</span>
+        <span style="padding-top: 1px;">CPI &times; 10<sup>6</sup></span>
+      </span>
+    </div>
+    <div>
+      CPI = <span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 13px; padding: 0 4px;">
+        <span style="border-bottom: 1px solid #0f172a; padding-bottom: 1px;">&sum;<sub>i=1</sub><sup>n</sup> (CPI<sub>i</sub> &times; I<sub>i</sub>)</span>
+        <span style="padding-top: 1px;">I<sub>c</sub></span>
+      </span>
+    </div>
+  </div>
+</div></div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q32_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q32_text' name='q32_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q33'>
+      <div class='info'>
+        <h3 class='no'>33</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,20 trên 1,20</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>What is the correct sequence of instruction cycle?</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 1</span>
+                <select id='q33_sel_1' name='q33_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='Fetch opcode'>Fetch opcode</option><option value='Decode'>Decode</option><option value='Calculate operand address'>Calculate operand address</option><option value='Fetch operand'>Fetch operand</option><option value='Execution'>Execution</option><option value='Store result'>Store result</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 2</span>
+                <select id='q33_sel_2' name='q33_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='Fetch opcode'>Fetch opcode</option><option value='Decode'>Decode</option><option value='Calculate operand address'>Calculate operand address</option><option value='Fetch operand'>Fetch operand</option><option value='Execution'>Execution</option><option value='Store result'>Store result</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 3</span>
+                <select id='q33_sel_3' name='q33_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='Fetch opcode'>Fetch opcode</option><option value='Decode'>Decode</option><option value='Calculate operand address'>Calculate operand address</option><option value='Fetch operand'>Fetch operand</option><option value='Execution'>Execution</option><option value='Store result'>Store result</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 4</span>
+                <select id='q33_sel_4' name='q33_sel_4' class='form-select select-styled'><option value=''>Choose...</option><option value='Fetch opcode'>Fetch opcode</option><option value='Decode'>Decode</option><option value='Calculate operand address'>Calculate operand address</option><option value='Fetch operand'>Fetch operand</option><option value='Execution'>Execution</option><option value='Store result'>Store result</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 5</span>
+                <select id='q33_sel_5' name='q33_sel_5' class='form-select select-styled'><option value=''>Choose...</option><option value='Fetch opcode'>Fetch opcode</option><option value='Decode'>Decode</option><option value='Calculate operand address'>Calculate operand address</option><option value='Fetch operand'>Fetch operand</option><option value='Execution'>Execution</option><option value='Store result'>Store result</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Step 6</span>
+                <select id='q33_sel_6' name='q33_sel_6' class='form-select select-styled'><option value=''>Choose...</option><option value='Fetch opcode'>Fetch opcode</option><option value='Decode'>Decode</option><option value='Calculate operand address'>Calculate operand address</option><option value='Fetch operand'>Fetch operand</option><option value='Execution'>Execution</option><option value='Store result'>Store result</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q34'>
+      <div class='info'>
+        <h3 class='no'>34</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Convert the 32-bit floating point number C4361000 (in hex) to decimal.</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q34_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q34_text' name='q34_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q35'>
+      <div class='info'>
+        <h3 class='no'>35</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Write mask byte (in hex) to clear bit 2nd, 3rd, 5th of a byte value with AND instruction (LSB is 1st bit).</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q35_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q35_text' name='q35_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q36'>
+      <div class='info'>
+        <h3 class='no'>36</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>8088 is 16 bit processor, the maximum addressable memory is:</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q36_ans' id='q36_a' value='A'>
+                <label for='q36_a'><span class='answernumber'>a. </span><span>640M</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q36_ans' id='q36_b' value='B'>
+                <label for='q36_b'><span class='answernumber'>b. </span><span>640K</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q36_ans' id='q36_c' value='C'>
+                <label for='q36_c'><span class='answernumber'>c. </span><span>1024K</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q36_ans' id='q36_d' value='D'>
+                <label for='q36_d'><span class='answernumber'>d. </span><span>64M</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q37'>
+      <div class='info'>
+        <h3 class='no'>37</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Write mask byte (in hex) to set bit 6th, 4th of a byte value with OR instruction (LSB is the 1st bit).</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q37_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q37_text' name='q37_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q38'>
+      <div class='info'>
+        <h3 class='no'>38</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 0,50 trên 0,50</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>the instruction, CMP to compare source and destination operands by __________</div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q38_ans' id='q38_a' value='A'>
+                <label for='q38_a'><span class='answernumber'>a. </span><span>subtracting</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q38_ans' id='q38_b' value='B'>
+                <label for='q38_b'><span class='answernumber'>b. </span><span>adding</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q38_ans' id='q38_c' value='C'>
+                <label for='q38_c'><span class='answernumber'>c. </span><span>dividing</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q38_ans' id='q38_d' value='D'>
+                <label for='q38_d'><span class='answernumber'>d. </span><span>comparing</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q39'>
+      <div class='info'>
+        <h3 class='no'>39</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>A benchmark program is run on a 40 MHz processor. The executed program consists of 100,000 instruction executions, with the following instruction mix and clock cycle count:
+<div style="margin: 12px 0; overflow-x: auto;">
+  <table style="border-collapse: collapse; font-family: 'Inter', -apple-system, sans-serif; font-size: 13.5px; border: 1px solid #cbd5e1; text-align: left; max-width: 540px; width: 100%;">
+    <thead>
+      <tr style="background: #f1f5f9; border-bottom: 2px solid #94a3b8;">
+        <th style="padding: 8px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">Instruction Type</th>
+        <th style="padding: 8px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1; text-align: right;">Instruction Count</th>
+        <th style="padding: 8px 14px; font-weight: 700; color: #0f172a; text-align: right;">Cycles per Instruction</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Integer arithmetic</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">45,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">1</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Data transfer</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">32,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">2</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Floating point</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">15,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">2</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 14px; color: #1e293b; border-right: 1px solid #cbd5e1;">Control transfer</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right; border-right: 1px solid #cbd5e1;">8,000</td>
+        <td style="padding: 7px 14px; font-family: 'JetBrains Mono', monospace; text-align: right;">2</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p style="margin: 12px 0 6px;">Calculate the execution time for this program.</p>
+<div class="formula-box" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 18px; margin: 10px 0 14px; font-family: 'Cambria Math', 'Times New Roman', serif; max-width: 540px;">
+  <div style="font-weight: 700; font-family: 'Inter', sans-serif; font-size: 13px; color: #334155; margin-bottom: 8px;">Given formulas:</div>
+  <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px; font-style: italic; color: #0f172a;">
+    <div>
+      T = I<sub>c</sub> &times; CPI &times; &tau;
+    </div>
+    <div>
+      CPI = <span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 13px; padding: 0 4px;">
+        <span style="border-bottom: 1px solid #0f172a; padding-bottom: 1px;">&sum;<sub>i=1</sub><sup>n</sup> (CPI<sub>i</sub> &times; I<sub>i</sub>)</span>
+        <span style="padding-top: 1px;">I<sub>c</sub></span>
+      </span>
+    </div>
+  </div>
+</div></div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q39_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q39_text' name='q39_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q40'>
+      <div class='info'>
+        <h3 class='no'>40</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Part of computer memory is shown in figure:
+<div class="memory-table-wrap" style="margin: 12px 0 16px; overflow-x: auto;">
+  <img src="images/q40-memory-table.png" alt="Memory map figure" style="max-height: 70px; border: none !important; box-shadow: none !important; border-radius: 0 !important; display: block; margin-bottom: 8px;">
+  <table class="memory-diagram-table" style="border-collapse: collapse; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px; text-align: center; border: 1px solid #334155;">
+    <thead>
+      <tr style="background: #f1f5f9; border-bottom: 1px solid #334155;">
+        <th style="padding: 6px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #334155;">Address</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D48</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D49</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D4A</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D4B</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D4C</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D4D</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D4E</th>
+        <th style="padding: 6px 12px; font-weight: 600; color: #0369a1;">1D4F</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background: #ffffff;">
+        <th style="padding: 6px 14px; font-weight: 700; color: #0f172a; background: #f8fafc; border-right: 1px solid #334155;">Value</th>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">03</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">7F</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">F5</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">2D</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">5A</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">12</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">7B</td>
+        <td style="padding: 6px 12px; font-weight: 700; color: #0f172a;">C0</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p>What is the value of AX register after instruction <code>MOV AX, [1D4B]</code> executed</p></div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q40_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q40_text' name='q40_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q41'>
+      <div class='info'>
+        <h3 class='no'>41</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Select correct level for contemporary computer multilevel machine</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Level 3</span>
+                <select id='q41_sel_1' name='q41_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Level 5</span>
+                <select id='q41_sel_2' name='q41_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Level 6</span>
+                <select id='q41_sel_3' name='q41_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Level 1</span>
+                <select id='q41_sel_4' name='q41_sel_4' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Layer 4</span>
+                <select id='q41_sel_5' name='q41_sel_5' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Level 2</span>
+                <select id='q41_sel_6' name='q41_sel_6' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Level 0</span>
+                <select id='q41_sel_7' name='q41_sel_7' class='form-select select-styled'><option value=''>Choose...</option><option value='Operating system level'>Operating system level</option><option value='High level programming language'>High level programming language</option><option value='Applications'>Applications</option><option value='Microarchitecture level'>Microarchitecture level</option><option value='Assembly Language level'>Assembly Language level</option><option value='Instruction set level'>Instruction set level</option><option value='Digital logic level'>Digital logic level</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q42'>
+      <div class='info'>
+        <h3 class='no'>42</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>the memory stack area of a program shown in figure:
+<div class="memory-table-wrap" style="margin: 12px 0 16px; overflow-x: auto;">
+  <img src="images/q42-stack-table.png" alt="Stack area figure" style="max-height: 70px; border: none !important; box-shadow: none !important; border-radius: 0 !important; display: block; margin-bottom: 8px;">
+  <table class="memory-diagram-table" style="border-collapse: collapse; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px; text-align: center; border: 1px solid #334155;">
+    <thead>
+      <tr style="background: #f1f5f9; border-bottom: 1px solid #334155;">
+        <th style="padding: 6px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #334155;">Address</th>
+        <th style="padding: 6px 14px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D50</th>
+        <th style="padding: 6px 14px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D51</th>
+        <th style="padding: 6px 14px; font-weight: 600; color: #0369a1; border-right: 1px solid #cbd5e1;">1D52</th>
+        <th style="padding: 6px 14px; font-weight: 600; color: #0369a1;">1D53</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background: #ffffff;">
+        <th style="padding: 6px 14px; font-weight: 700; color: #0f172a; background: #f8fafc; border-right: 1px solid #334155;">Value</th>
+        <td style="padding: 6px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">AF</td>
+        <td style="padding: 6px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">12</td>
+        <td style="padding: 6px 14px; font-weight: 700; color: #0f172a; border-right: 1px solid #cbd5e1;">00</td>
+        <td style="padding: 6px 14px; font-weight: 700; color: #0f172a;">DA</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p>The value of SP register is 1D50. What is the value of SP follows the execution of <code>PUSH SI</code></p></div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q42_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q42_text' name='q42_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q43'>
+      <div class='info'>
+        <h3 class='no'>43</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Choose the correct structure of memory chip as shown below
+<div style="margin: 12px 0;">
+  <img src="images/q43-tms4016.png" alt="TMS4016 memory chip pinout" style="max-width: 240px; width: 100%; height: auto; display: block;">
+</div>
+<p><small class="text-muted">Note: DQ: Data pinout</small></p></div><div class='prompt'>Select one:</div><div class='answer'>
+              <div class='r0'>
+                <input type='radio' name='q43_ans' id='q43_a' value='A'>
+                <label for='q43_a'><span class='answernumber'>a. </span><span>DRAM 2Kx8-bit</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q43_ans' id='q43_b' value='B'>
+                <label for='q43_b'><span class='answernumber'>b. </span><span>SRAM 1Kx16-bit</span></label>
+              </div>
+              <div class='r0'>
+                <input type='radio' name='q43_ans' id='q43_c' value='C'>
+                <label for='q43_c'><span class='answernumber'>c. </span><span>SRAM 2Kx8-bit</span></label>
+              </div>
+              <div class='r1'>
+                <input type='radio' name='q43_ans' id='q43_d' value='D'>
+                <label for='q43_d'><span class='answernumber'>d. </span><span>DRAM 1Kx16-bit</span></label>
+              </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q44'>
+      <div class='info'>
+        <h3 class='no'>44</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 1,00 trên 1,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Given 8-bit floating-point binary format:<br>
+1 (sign) + 3 (exponent) + 4 (mantissa)<br>
+Convert the 8-bit floating point number 68 (in hex) to decimal.</div>
+          <div class='absubpart shortanswer' style='margin-top: 14px;'>
+            <label for='q44_text' style='font-weight: 600; margin-right: 8px;'>Answer:</label>
+            <input type='text' id='q44_text' name='q44_text' class='form-control text-input-styled' placeholder='Điền đáp án...'>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='que ' id='q45'>
+      <div class='info'>
+        <h3 class='no'>45</h3>
+        <div class='state unanswered'>Chưa trả lời</div>
+        <div class='grade'>Đạt điểm 2,00 trên 2,00</div>
+        <div class='questionflag'>Đặt cờ</div>
+      </div>
+      <div class='content'>
+        <div class='formulation'>
+          <div class='qtext'>Choose correct RAID volume definitions for a request 2T storage.</div><div class='absubpart dropdown-matching' style='margin-top: 14px; display: flex; flex-direction: column; gap: 10px;'>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>RAID 0 - Striped volume</span>
+                <select id='q45_sel_1' name='q45_sel_1' class='form-select select-styled'><option value=''>Choose...</option><option value='2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails'>2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails</option><option value='At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time'>At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time</option><option value='2 x 2T HDDs are needed, no data lost when the primary storage fails'>2 x 2T HDDs are needed, no data lost when the primary storage fails</option><option value='2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails'>2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>RAID5 Volume</span>
+                <select id='q45_sel_2' name='q45_sel_2' class='form-select select-styled'><option value=''>Choose...</option><option value='2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails'>2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails</option><option value='At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time'>At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time</option><option value='2 x 2T HDDs are needed, no data lost when the primary storage fails'>2 x 2T HDDs are needed, no data lost when the primary storage fails</option><option value='2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails'>2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>RAID 1 - Mirror volume</span>
+                <select id='q45_sel_3' name='q45_sel_3' class='form-select select-styled'><option value=''>Choose...</option><option value='2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails'>2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails</option><option value='At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time'>At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time</option><option value='2 x 2T HDDs are needed, no data lost when the primary storage fails'>2 x 2T HDDs are needed, no data lost when the primary storage fails</option><option value='2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails'>2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails</option>
+                </select>
+              </div>
+              <div class='dropdown-row' style='display: flex; align-items: center; gap: 12px; flex-wrap: wrap;'>
+                <span class='dropdown-label' style='font-weight: 600; min-width: 140px;'>Spanned Volume</span>
+                <select id='q45_sel_4' name='q45_sel_4' class='form-select select-styled'><option value=''>Choose...</option><option value='2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails'>2 x 1T HDDs are needed, enhance data transfer, no fault tolerance, data lost when one HDD fails</option><option value='At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time'>At least 3 x 2T HDDs, fault-tolerance, no data lost, no down-time</option><option value='2 x 2T HDDs are needed, no data lost when the primary storage fails'>2 x 2T HDDs are needed, no data lost when the primary storage fails</option><option value='2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails'>2T HDD + more HDDs to extend storage, no fault tolerance, data lost when one HDD fails</option>
+                </select>
+              </div></div>
+        </div>
+      </div>
+    </div>
+        <div class="submitbtns moodle-nav-controls">
+          <button type="button" class="btn btn-outline" id="btn-prev-page" onclick="prevPage()" disabled>◄ Trang trước</button>
+          <span class="page-indicator-text" id="page-indicator">Câu hỏi 1 / 45</span>
+          <button type="button" class="btn btn-primary" id="btn-next-page" onclick="nextPage()">Trang tiếp theo ►</button>
+        </div>
+      </form>
+    </main>
+
+    <aside class="quiz-nav-sidebar">
+      <h4>Quiz navigation <span id="progress-text" style="font-size: 12px; font-weight: normal; color: var(--text-muted);">0/45</span></h4>
+      <div class="quiz-nav-grid" id="quiz-grid">
+        <a href="#q1" class="quiz-nav-btn" data-q="q1">1</a>
+        <a href="#q2" class="quiz-nav-btn" data-q="q2">2</a>
+        <a href="#q3" class="quiz-nav-btn" data-q="q3">3</a>
+        <a href="#q4" class="quiz-nav-btn" data-q="q4">4</a>
+        <a href="#q5" class="quiz-nav-btn" data-q="q5">5</a>
+        <a href="#q6" class="quiz-nav-btn" data-q="q6">6</a>
+        <a href="#q7" class="quiz-nav-btn" data-q="q7">7</a>
+        <a href="#q8" class="quiz-nav-btn" data-q="q8">8</a>
+        <a href="#q9" class="quiz-nav-btn" data-q="q9">9</a>
+        <a href="#q10" class="quiz-nav-btn" data-q="q10">10</a>
+        <a href="#q11" class="quiz-nav-btn" data-q="q11">11</a>
+        <a href="#q12" class="quiz-nav-btn" data-q="q12">12</a>
+        <a href="#q13" class="quiz-nav-btn" data-q="q13">13</a>
+        <a href="#q14" class="quiz-nav-btn" data-q="q14">14</a>
+        <a href="#q15" class="quiz-nav-btn" data-q="q15">15</a>
+        <a href="#q16" class="quiz-nav-btn" data-q="q16">16</a>
+        <a href="#q17" class="quiz-nav-btn" data-q="q17">17</a>
+        <a href="#q18" class="quiz-nav-btn" data-q="q18">18</a>
+        <a href="#q19" class="quiz-nav-btn" data-q="q19">19</a>
+        <a href="#q20" class="quiz-nav-btn" data-q="q20">20</a>
+        <a href="#q21" class="quiz-nav-btn" data-q="q21">21</a>
+        <a href="#q22" class="quiz-nav-btn" data-q="q22">22</a>
+        <a href="#q23" class="quiz-nav-btn" data-q="q23">23</a>
+        <a href="#q24" class="quiz-nav-btn" data-q="q24">24</a>
+        <a href="#q25" class="quiz-nav-btn" data-q="q25">25</a>
+        <a href="#q26" class="quiz-nav-btn" data-q="q26">26</a>
+        <a href="#q27" class="quiz-nav-btn" data-q="q27">27</a>
+        <a href="#q28" class="quiz-nav-btn" data-q="q28">28</a>
+        <a href="#q29" class="quiz-nav-btn" data-q="q29">29</a>
+        <a href="#q30" class="quiz-nav-btn" data-q="q30">30</a>
+        <a href="#q31" class="quiz-nav-btn" data-q="q31">31</a>
+        <a href="#q32" class="quiz-nav-btn" data-q="q32">32</a>
+        <a href="#q33" class="quiz-nav-btn" data-q="q33">33</a>
+        <a href="#q34" class="quiz-nav-btn" data-q="q34">34</a>
+        <a href="#q35" class="quiz-nav-btn" data-q="q35">35</a>
+        <a href="#q36" class="quiz-nav-btn" data-q="q36">36</a>
+        <a href="#q37" class="quiz-nav-btn" data-q="q37">37</a>
+        <a href="#q38" class="quiz-nav-btn" data-q="q38">38</a>
+        <a href="#q39" class="quiz-nav-btn" data-q="q39">39</a>
+        <a href="#q40" class="quiz-nav-btn" data-q="q40">40</a>
+        <a href="#q41" class="quiz-nav-btn" data-q="q41">41</a>
+        <a href="#q42" class="quiz-nav-btn" data-q="q42">42</a>
+        <a href="#q43" class="quiz-nav-btn" data-q="q43">43</a>
+        <a href="#q44" class="quiz-nav-btn" data-q="q44">44</a>
+        <a href="#q45" class="quiz-nav-btn" data-q="q45">45</a>
+      </div>
+      <div style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <button type="button" class="btn btn-primary" style="width: 100%;" onclick="markAllComplete()">Nộp bài và kết thúc</button>
+        <div style="font-size: 11px; color: var(--text-muted); text-align: center;">Thời gian còn lại: <strong id="timer">73:45</strong></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    function getPageFromLocation() {
+      const match = window.location.hash.match(/^#q(\d+)$/i);
+      const page = match ? Number(match[1]) : 1;
+      return Number.isInteger(page) && page >= 1 && page <= 45 ? page : 1;
+    }
+
+    let currentPage = getPageFromLocation();
+    const totalQuestions = 45;
+    let isSinglePageMode = true;
+
+
+
+    function renderPage(pageNumber) {
+      if (pageNumber < 1) pageNumber = 1;
+      if (pageNumber > totalQuestions) pageNumber = totalQuestions;
+      currentPage = pageNumber;
+
+      const pageUrl = window.location.pathname + window.location.search + '#q' + currentPage;
+      if (window.location.hash !== '#q' + currentPage && window.history?.replaceState) {
+        window.history.replaceState(null, '', pageUrl);
+      }
+
+      if (isSinglePageMode) {
+        document.body.classList.add('single-question-mode');
+        document.querySelectorAll('.que').forEach(card => card.classList.remove('current-page'));
+        const activeCard = document.getElementById('q' + currentPage);
+        if (activeCard) {
+          activeCard.classList.add('current-page');
+        }
+      } else {
+        document.body.classList.remove('single-question-mode');
+        document.querySelectorAll('.que').forEach(card => card.classList.remove('current-page'));
+      }
+
+      document.querySelectorAll('.quiz-nav-btn').forEach(btn => {
+        const qNum = parseInt(btn.getAttribute('data-q').replace('q', ''), 10);
+        btn.classList.toggle('current-page', isSinglePageMode && qNum === currentPage);
+      });
+
+      const indicator = document.getElementById('page-indicator');
+      if (indicator) indicator.textContent = 'Câu hỏi ' + currentPage + ' / ' + totalQuestions;
+
+      const prevBtn = document.getElementById('btn-prev-page');
+      const nextBtn = document.getElementById('btn-next-page');
+      if (prevBtn) prevBtn.disabled = (currentPage === 1);
+      if (nextBtn) {
+        if (currentPage === totalQuestions) {
+          nextBtn.textContent = 'Kết thúc kiểm tra...';
+        } else {
+          nextBtn.textContent = 'Trang tiếp theo ►';
+        }
+      }
+
+      const activeCard = document.getElementById('q' + currentPage);
+      if (activeCard && isSinglePageMode) {
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function nextPage() {
+      if (currentPage < totalQuestions) {
+        renderPage(currentPage + 1);
+      } else {
+        alert('Bạn đã đến câu cuối cùng của đề thi (Câu 45).');
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        renderPage(currentPage - 1);
+      }
+    }
+
+    // Gắn sự kiện click cho các ô số trong sidebar Quiz Navigation
+    document.querySelectorAll('.quiz-nav-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const qNum = parseInt(this.getAttribute('data-q').replace('q', ''), 10);
+        if (isSinglePageMode) {
+          renderPage(qNum);
+        } else {
+          const el = document.getElementById('q' + qNum);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Cập nhật trạng thái radio / checkbox / input / select
+    document.querySelectorAll('.que input, .que select').forEach(input => {
+      input.addEventListener('change', function() {
+        const queCard = this.closest('.que');
+        if (!queCard) return;
+
+        if (this.type === 'radio') {
+          queCard.querySelectorAll('.answer .r0, .answer .r1').forEach(row => row.classList.remove('active'));
+          this.closest('.r0, .r1')?.classList.add('active');
+        } else if (this.type === 'checkbox') {
+          this.closest('.r0, .r1')?.classList.toggle('active', this.checked);
+        }
+
+        updateQuestionStatus(queCard);
+      });
+
+      if (input.tagName === 'INPUT' && input.type === 'text') {
+        input.addEventListener('input', function() {
+          const queCard = this.closest('.que');
+          if (queCard) updateQuestionStatus(queCard);
+        });
+      }
+    });
+
+    function updateQuestionStatus(card) {
+      const qId = card.id;
+      const stateEl = card.querySelector('.info .state');
+      const navBtn = document.querySelector('.quiz-nav-btn[data-q="' + qId + '"]');
+
+      const checkedInputs = card.querySelectorAll('input:checked');
+      const textInputs = Array.from(card.querySelectorAll('input[type="text"]')).filter(i => i.value.trim().length > 0);
+      const selects = Array.from(card.querySelectorAll('select')).filter(s => s.value && s.value.length > 0);
+
+      const isAnswered = (checkedInputs.length > 0) || (textInputs.length > 0) || (selects.length > 0);
+
+      if (stateEl) {
+        if (isAnswered) {
+          stateEl.textContent = 'Đã trả lời';
+          stateEl.classList.remove('unanswered');
+        } else {
+          stateEl.textContent = 'Chưa trả lời';
+          stateEl.classList.add('unanswered');
+        }
+      }
+
+      if (navBtn) {
+        navBtn.classList.toggle('answered', isAnswered);
+      }
+
+      const totalAnswered = document.querySelectorAll('.quiz-nav-btn.answered').length;
+      document.getElementById('progress-text').textContent = totalAnswered + '/' + totalQuestions;
+    }
+
+    function resetForm() {
+      document.getElementById('responseform').reset();
+      document.querySelectorAll('.que .answer .r0, .que .answer .r1').forEach(row => row.classList.remove('active'));
+      document.querySelectorAll('.que').forEach(card => updateQuestionStatus(card));
+      renderPage(1);
+    }
+
+    function markAllComplete() {
+      document.querySelectorAll('.que .info .state').forEach(st => {
+        st.textContent = 'Hoàn thành';
+        st.classList.remove('unanswered');
+      });
+      alert('Đã nộp bài kiểm tra thành công!');
+    }
+
+    function triggerDetectTest() {
+      if (typeof window.ExamDomScanner !== 'undefined') {
+        const detected = window.ExamDomScanner.scanAll();
+        alert('Extension ExamDomScanner phát hiện thành công: ' + detected.length + ' câu hỏi!');
+        console.log('[Detect Test] Questions found:', detected);
+      } else {
+        const visibleQue = document.querySelectorAll('.que.current-page, .que:not([style*="display: none"])');
+        alert('Đang hiển thị ' + visibleQue.length + ' câu hỏi (' + (isSinglePageMode ? 'Chế độ 1 câu/trang' : 'Xem tất cả') + '). Sẵn sàng để Extension quét!');
+        console.log('[Detect Test] Active questions:', visibleQue);
+      }
+    }
+
+    // Simple countdown timer
+    let timeRemaining = 75 * 60;
+    setInterval(() => {
+      if (timeRemaining > 0) {
+        timeRemaining--;
+        const mins = Math.floor(timeRemaining / 60);
+        const secs = timeRemaining % 60;
+        const timerEl = document.getElementById('timer');
+        if (timerEl) {
+          timerEl.textContent = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }
+      }
+    }, 1000);
+
+    // Khởi tạo hiển thị trang từ URL hash hoặc trang 1
+    renderPage(currentPage);
+  
+    // Exam switcher dropdown toggle & click outside
+    
+    
+    
+    function toggleExamSwitcher(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const menu = document.getElementById('examSwitcherMenu');
+      const container = document.querySelector('.exam-switcher-container');
+      const toggle = document.getElementById('examSwitcherToggle');
+      if (!menu) return;
+      const isHidden = (menu.style.display === 'none' || menu.style.display === '');
+      if (isHidden) {
+        menu.style.display = 'block';
+        const rect = menu.getBoundingClientRect();
+        if (rect.right > (window.innerWidth || document.documentElement.clientWidth) - 10) {
+          menu.style.left = 'auto';
+          menu.style.right = '0px';
+        } else {
+          menu.style.left = '0px';
+          menu.style.right = 'auto';
+        }
+      } else {
+        menu.style.display = 'none';
+      }
+      if (container) container.classList.toggle('open', isHidden);
+      if (toggle) toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    }
+    window.toggleExamSwitcher = toggleExamSwitcher;
+
+  
+    // === UNIFIED VIEW MODE & CONTROLLER SCRIPT ===
+    function setMode(singlePage) {
+      if (typeof singlePage === 'string') {
+        singlePage = (singlePage === 'single' || singlePage === '1');
+      }
+      singlePage = Boolean(singlePage);
+
+      if (typeof isSinglePageMode !== 'undefined') isSinglePageMode = singlePage;
+      if (typeof isSingleMode !== 'undefined') isSingleMode = singlePage;
+      if (typeof singleQuestionMode !== 'undefined') singleQuestionMode = singlePage;
+
+      document.body.classList.toggle('single-question-mode', singlePage);
+
+      const btnSingle = document.getElementById('btn-mode-single');
+      const btnAll = document.getElementById('btn-mode-all');
+      if (btnSingle) btnSingle.classList.toggle('active', singlePage);
+      if (btnAll) btnAll.classList.toggle('active', !singlePage);
+
+      // Also sync legacy button IDs if present
+      document.querySelectorAll('#singlePageModeBtn, #mode-single, #btnModeSingle').forEach(b => b.classList.toggle('active', singlePage));
+      document.querySelectorAll('#allQuestionsModeBtn, #mode-all, #btnModeAll').forEach(b => b.classList.toggle('active', !singlePage));
+
+      // Display controls bar
+      const moodleNav = document.getElementById('moodleNavControls') || document.getElementById('moodle-nav-bar') || document.querySelector('.moodle-nav-controls') || document.querySelector('.pagination-bar');
+      if (moodleNav) moodleNav.style.display = singlePage ? 'flex' : 'none';
+
+      // Update mode text description if present
+      const modeText = document.getElementById('display-mode-text');
+      if (modeText) {
+        modeText.textContent = singlePage 
+          ? '1 câu hỏi / 1 trang (Moodle Standard Pagination)' 
+          : 'Tất cả câu hỏi trên cùng 1 trang';
+      }
+
+      // Call page render function
+      const targetPage = (typeof currentPage !== 'undefined' ? currentPage : (typeof currentQuestionIndex !== 'undefined' ? currentQuestionIndex : 1));
+      if (typeof renderPage === 'function') {
+        renderPage(targetPage);
+      } else if (typeof showPage === 'function') {
+        showPage(targetPage);
+      } else if (typeof showQuestion === 'function') {
+        showQuestion(targetPage, false);
+      } else if (typeof goToQuestion === 'function') {
+        goToQuestion(targetPage);
+      }
+    }
+    window.setMode = setMode;
+    window.setViewMode = setMode;
+    window.applySingleQuestionMode = setMode;
+
+    // Reset Form
+    function resetForm() {
+      const form = document.getElementById('responseform') || document.querySelector('form');
+      if (form) form.reset();
+      document.querySelectorAll('.que .answer .r0, .que .answer .r1').forEach(row => row.classList.remove('active'));
+      document.querySelectorAll('.que input[type="radio"], .que input[type="checkbox"]').forEach(i => i.checked = false);
+      document.querySelectorAll('.que input[type="text"]').forEach(i => i.value = '');
+      document.querySelectorAll('.que select').forEach(s => s.selectedIndex = 0);
+      document.querySelectorAll('.qn-btn, .quiz-nav-btn, .qnbutton').forEach(btn => btn.classList.remove('answered'));
+      if (typeof updateQuestionStatus === 'function') {
+        document.querySelectorAll('.que').forEach(q => updateQuestionStatus(q));
+      }
+      setMode(true);
+    }
+    window.resetForm = resetForm;
+
+    // Trigger Detect Test
+    function triggerDetectTest() {
+      if (typeof window.ExamDomScanner !== 'undefined') {
+        const detected = window.ExamDomScanner.scanAll();
+        alert('Extension ExamDomScanner phát hiện thành công: ' + detected.length + ' câu hỏi!');
+        console.log('[Detect Test] Questions found:', detected);
+      } else {
+        const visibleQue = document.querySelectorAll('.que.current-page, .que:not([style*="display: none"])');
+        alert('Đang hiển thị ' + visibleQue.length + ' câu hỏi (Chế độ 1 câu/trang). Sẵn sàng để Extension quét!');
+        console.log('[Detect Test] Active question:', visibleQue);
+      }
+    }
+    window.triggerDetectTest = triggerDetectTest;
+    window.triggerMoodleScannerTest = triggerDetectTest;
+
+    // Exam switcher dropdown toggle & click outside
+    (function initExamSwitcher() {
+      const switcherToggle = document.getElementById('examSwitcherToggle');
+      const switcherMenu = document.getElementById('examSwitcherMenu');
+      const switcherContainer = document.querySelector('.exam-switcher-container');
+      if (!switcherToggle || !switcherMenu) return;
+
+      switcherToggle.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isHidden = (switcherMenu.style.display === 'none' || switcherMenu.style.display === '');
+        if (isHidden) {
+          switcherMenu.style.display = 'block';
+          const rect = switcherMenu.getBoundingClientRect();
+          if (rect.right > (window.innerWidth || document.documentElement.clientWidth) - 10) {
+            switcherMenu.style.left = 'auto';
+            switcherMenu.style.right = '0px';
+          } else {
+            switcherMenu.style.left = '0px';
+            switcherMenu.style.right = 'auto';
+          }
+        } else {
+          switcherMenu.style.display = 'none';
+        }
+        if (switcherContainer) switcherContainer.classList.toggle('open', isHidden);
+        switcherToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+      };
+
+      document.addEventListener('click', function(e) {
+        if (!switcherMenu.contains(e.target) && !switcherToggle.contains(e.target)) {
+          switcherMenu.style.display = 'none';
+          if (switcherContainer) switcherContainer.classList.remove('open');
+          switcherToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          switcherMenu.style.display = 'none';
+          if (switcherContainer) switcherContainer.classList.remove('open');
+          switcherToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+
+  </script>
+</body>
+</html>

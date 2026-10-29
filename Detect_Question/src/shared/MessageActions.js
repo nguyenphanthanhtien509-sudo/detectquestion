@@ -1,0 +1,36 @@
+(function registerMessageActions(scope) {
+  scope.MessageActions = Object.freeze({
+    // Solving triggers
+    TRIGGER_SINGLE_SOLVE: 'TRIGGER_SINGLE_SOLVE',
+    REQUEST_TOP_FRAME_SINGLE_SOLVE: 'REQUEST_TOP_FRAME_SINGLE_SOLVE',
+    TRIGGER_SINGLE_MODEL_SOLVE: 'TRIGGER_SINGLE_MODEL_SOLVE',
+    REQUEST_TOP_FRAME_SINGLE_MODEL_SOLVE: 'REQUEST_TOP_FRAME_SINGLE_MODEL_SOLVE',
+    TRIGGER_CONTINUOUS_SOLVE: 'TRIGGER_CONTINUOUS_SOLVE',
+    TRIGGER_AUTO_SOLVE: 'TRIGGER_AUTO_SOLVE',
+    STOP_AUTO_SOLVE: 'STOP_AUTO_SOLVE',
+
+    // Scanning & selection
+    SCAN_QUESTIONS: 'SCAN_QUESTIONS',
+    AUTO_SELECT_ANSWER: 'AUTO_SELECT_ANSWER',
+    HIGHLIGHT_QUESTION: 'HIGHLIGHT_QUESTION',
+    CLEAR_HIGHLIGHT: 'CLEAR_HIGHLIGHT',
+
+    // Local adaptive-debate backend bridge
+    CALL_ADAPTIVE_DEBATE: 'CALL_ADAPTIVE_DEBATE',
+    READ_IMAGE_AS_BASE64: 'READ_IMAGE_AS_BASE64',
+    CAPTURE_VISIBLE_TAB: 'CAPTURE_VISIBLE_TAB',
+    WRITE_ANSWER_CLIPBOARD: 'WRITE_ANSWER_CLIPBOARD',
+    WRITE_ANSWER_CLIPBOARD_OFFSCREEN: 'WRITE_ANSWER_CLIPBOARD_OFFSCREEN',
+
+    // Answer cache: Alt+B is read-only and must never be confused with a
+    // solver request or a DOM selection request.
+    TRIGGER_REVIEW_CACHE: 'TRIGGER_REVIEW_CACHE',
+    REQUEST_TOP_FRAME_REVIEW_CACHE: 'REQUEST_TOP_FRAME_REVIEW_CACHE',
+    ANSWER_CACHE_GET: 'ANSWER_CACHE_GET',
+    ANSWER_CACHE_SET: 'ANSWER_CACHE_SET'
+  });
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { MessageActions: scope.MessageActions };
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this);

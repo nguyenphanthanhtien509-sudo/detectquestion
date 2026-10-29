@@ -1,0 +1,759 @@
+[
+  {
+    "id": "ch1",
+    "number": 1,
+    "title": "Computer System and Performance",
+    "shortTitle": "Ch 1: System & Performance",
+    "sourceDocs": [
+      "ch01_full.pdf"
+    ],
+    "totalPages": 99,
+    "slideRange": "Slides 1.1 – 1.104",
+    "classification": "Mixed (44% Theory / 56% Practical Calculations & Analysis)",
+    "defaultTheoryRatio": 44,
+    "defaultPracticeRatio": 56,
+    "recommendedDistributionNote": "Chapter 1 combines foundational computer architecture theory (44%, 22 questions per 50-Q test) with quantitative performance analysis, clock/cycle calculations, CPI/MIPS metrics, pipeline timing, and Amdahl's Law problems (56%, 28 questions per 50-Q test).",
+    "learningObjectives": [
+      "Distinguish between Computer Architecture (logical/programmer view) and Computer Organization (physical/hardware implementation).",
+      "Identify the four main functions and four structural components of a single-processor and multicore computer system.",
+      "Map the 7-level Computer Level Hierarchy from Digital Logic (Level 0) to User Level (Level 6) and contrast Von Neumann vs. Harvard architectures.",
+      "Trace the evolution of computers (Generations 0–4) and Intel processor families, applying Moore's Law.",
+      "Calculate clock period, frequency, CPU execution time, weighted average CPI, MIPS, pipeline execution cycles, and Amdahl's Law speedups.",
+      "Compare CISC vs. RISC design philosophies (including register windows and instruction cycle counts) and classify parallel systems using Flynn's Taxonomy."
+    ],
+    "formulas": [
+      {
+        "name": "Clock Cycle Time & Frequency",
+        "formula": "T_cycle = 1 / f_clock",
+        "units": "seconds (ns, ps) and Hertz (MHz, GHz)",
+        "ref": "ch01_full.pdf, pp. 22, 68"
+      },
+      {
+        "name": "Relative Performance",
+        "formula": "P_A / P_B = Execution_Time_B / Execution_Time_A = k",
+        "units": "dimensionless ratio",
+        "ref": "ch01_full.pdf, p. 67"
+      },
+      {
+        "name": "CPU Execution Time",
+        "formula": "CPU Time = Clock Cycles * Cycle Time = (IC * CPI) / Clock Rate",
+        "units": "seconds",
+        "ref": "ch01_full.pdf, pp. 69, 71, 76"
+      },
+      {
+        "name": "Weighted Average CPI",
+        "formula": "CPI = Sum(CPI_i * IC_i) / Total_IC = Sum(CPI_i * Relative_Freq_i)",
+        "units": "cycles per instruction",
+        "ref": "ch01_full.pdf, p. 73"
+      },
+      {
+        "name": "MIPS (Millions of Instructions/Sec)",
+        "formula": "MIPS = IC / (Execution_Time * 10^6) = Clock_Rate / (CPI * 10^6)",
+        "units": "millions of instructions/sec",
+        "ref": "ch01_full.pdf, p. 77"
+      },
+      {
+        "name": "Amdahl's Law",
+        "formula": "S = 1 / ((1 - f) + (f / k))",
+        "units": "overall speedup ratio",
+        "ref": "ch01_full.pdf, pp. 78–81"
+      }
+    ],
+    "misconceptions": [
+      "Confusing powers of 10 (10^3, 10^6, 10^9 used for clock rates and communication bandwidth) with powers of 2 (2^10=1024, 2^20, 2^30 used for binary memory capacity).",
+      "Assuming a higher clock frequency (GHz) or higher MIPS rating always guarantees faster program execution without accounting for Instruction Count (IC) and CPI.",
+      "Applying Amdahl's Law as S = (1-f) + f*k instead of taking the reciprocal of the new normalized execution time: S = 1 / ((1-f) + f/k).",
+      "Confusing Computer Architecture (ISA, addressing modes, data types) with Computer Organization (control signals, circuit design, memory technology)."
+    ],
+    "topics": [
+      {
+        "id": "ch1-t1",
+        "title": "1.1 Concepts, Functions & Classification of Computers",
+        "subtopics": [
+          "Definition & Hardware/Software",
+          "Four Main Computer Functions",
+          "Computer Classes (PC, PMD, IoT, Server, WSC/Supercomputer)"
+        ]
+      },
+      {
+        "id": "ch1-t2",
+        "title": "1.2 Computer Architecture vs. Computer Organization",
+        "subtopics": [
+          "Organization vs. Architecture Distinction",
+          "Instruction Set Architecture (ISA)",
+          "Microarchitecture & System Design"
+        ]
+      },
+      {
+        "id": "ch1-t3",
+        "title": "1.3 Computer Structure, Multicore & System Metrics",
+        "subtopics": [
+          "CPU, RAM/ROM, I/O & System Buses",
+          "Multicore Processors & Core Elements",
+          "Capacity, Speed, Time & Advertisement Specs"
+        ]
+      },
+      {
+        "id": "ch1-t4",
+        "title": "1.4 Computer System Layers & 7-Level Hierarchy",
+        "subtopics": [
+          "Hardware, System Software & App Software",
+          "HLL, Assembly & Machine Code",
+          "Levels 0 to 6 Virtual Machine Hierarchy"
+        ]
+      },
+      {
+        "id": "ch1-t5",
+        "title": "1.5 Von Neumann and Harvard Architectures",
+        "subtopics": [
+          "Von Neumann Fetch-Decode-Execute Cycle",
+          "Harvard Split Memory & Dual Buses"
+        ]
+      },
+      {
+        "id": "ch1-t6",
+        "title": "1.6 Evolution of Computers & Intel Processors",
+        "subtopics": [
+          "Generations 0 to 4 (Mechanical to VLSI/ULSI)",
+          "Moore's Law & IC Types (SoC, Chipset)",
+          "Intel Processor Evolution (4004 to Core i7)"
+        ]
+      },
+      {
+        "id": "ch1-t7",
+        "title": "1.7 Processor Acceleration Techniques",
+        "subtopics": [
+          "Instruction-Level Pipelining (6-Stage Pipeline)",
+          "Branch Prediction, Data Flow & Speculative Execution",
+          "Power/Heat Wall, MIC & GPU Trends"
+        ]
+      },
+      {
+        "id": "ch1-t8",
+        "title": "1.8 Computer Performance & Amdahl's Law",
+        "subtopics": [
+          "Relative Performance & CPU Time Equation",
+          "Instruction Count (IC), CPI & Weighted CPI",
+          "MIPS Metric & Amdahl's Law Speedup/Cost"
+        ]
+      },
+      {
+        "id": "ch1-t9",
+        "title": "1.9 CISC vs. RISC & Flynn's Taxonomy",
+        "subtopics": [
+          "CISC vs. RISC Characteristics & Cycle Comparison",
+          "RISC Register Windows & CWP",
+          "Flynn's Taxonomy (SISD, SIMD, MIMD, MISD)"
+        ]
+      }
+    ],
+    "bankCount": 60,
+    "bankTheoryCount": 25,
+    "bankPracticeCount": 35
+  },
+  {
+    "id": "ch2",
+    "number": 2,
+    "title": "Top Level View of Computer Function",
+    "shortTitle": "Ch 2: Computer Function & Bus",
+    "sourceDocs": [
+      "ch02_full.pdf"
+    ],
+    "totalPages": 34,
+    "slideRange": "Slides 1 – 95 (34 pages)",
+    "classification": "Mixed (50% Theory / 50% Practical Tracing & Bus/Interrupt Calculations)",
+    "defaultTheoryRatio": 50,
+    "defaultPracticeRatio": 50,
+    "recommendedDistributionNote": "Chapter 2 balances architectural concepts of instruction cycles, interrupts, DMA, and bus design (50%, 25 questions per 50-Q test) with practical hex machine-code execution traces, Interrupt Vector Table address calculations, I/O vs. memory addressing, and bus capacity/bandwidth calculations (50%, 25 questions per 50-Q test).",
+    "learningObjectives": [
+      "Explain the three key concepts of the Von Neumann architecture and identify the top-level components of a computer system.",
+      "Describe the roles of CPU internal registers (PC, IR, MAR, MBR, I/O AR, I/O BR, AC, PSW flags) during instruction fetch and execution.",
+      "Trace hexadecimal machine code execution step-by-step across memory and CPU registers (PC, AC, IR) and map the Instruction Cycle State Diagram.",
+      "Classify interrupts (Program, Timer, I/O, Hardware Failure, Software INT n), compare polling vs. interrupt-driven I/O, and resolve nested multiple interrupts.",
+      "Calculate x86 Interrupt Vector Table (IVT) ISR pointer addresses and compare Separate (Isolated) I/O vs. Memory-Mapped I/O.",
+      "Analyze system bus structures (Data, Address, Control lines), bus arbitration/timing (Synchronous vs. Asynchronous), and calculate maximum addressable memory from address bus widths."
+    ],
+    "formulas": [
+      {
+        "name": "x86 Interrupt Vector Table ISR Address",
+        "formula": "Vector_Address = n * 4 (4 bytes per entry: 2-byte Offset + 2-byte Segment)",
+        "units": "byte address in IVT (0x0000:0000 to 0x0000:03FF)",
+        "ref": "ch02_full.pdf, p. 15 (Slide 39)"
+      },
+      {
+        "name": "IVT Total Size",
+        "formula": "Total_Size = 256 vectors * 4 bytes/vector = 1024 bytes = 1 KB",
+        "units": "bytes / KB",
+        "ref": "ch02_full.pdf, p. 15 (Slide 39)"
+      },
+      {
+        "name": "Maximum Addressable Memory Locations",
+        "formula": "Max_Locations = 2^n (where n = Address Bus width in bits)",
+        "units": "memory cells / bytes",
+        "ref": "ch02_full.pdf, pp. 33–34 (Slides 83–84)"
+      },
+      {
+        "name": "Hex Machine Instruction Format (Figure 3.5)",
+        "formula": "16-bit word = 4-bit Opcode (1 hex digit) + 12-bit Address (3 hex digits)",
+        "units": "hexadecimal machine word",
+        "ref": "ch02_full.pdf, p. 7 (Slide 17)"
+      }
+    ],
+    "misconceptions": [
+      "Confusing MAR (Memory Address Register, connected to address bus lines) with MBR (Memory Buffer Register, connected to data bus lines).",
+      "Assuming software interrupts (like x86 INT n) are asynchronous hardware signals rather than synchronous machine instructions.",
+      "Forgetting that when handling multiple interrupts via priorities, a higher-priority interrupt preempts a lower-priority ISR, which later resumes after the higher-priority ISR finishes.",
+      "Confusing the role of Address Bus width (which determines maximum addressable memory capacity 2^n) with Data Bus width (which determines how many bits are transferred in parallel per bus cycle)."
+    ],
+    "topics": [
+      {
+        "id": "ch2-t1",
+        "title": "2.1 Von Neumann Principles & Top-Level Components",
+        "subtopics": [
+          "Three Key Von Neumann Concepts",
+          "Hardwired vs. Software Programs",
+          "Four Top-Level System Components"
+        ]
+      },
+      {
+        "id": "ch2-t2",
+        "title": "2.2 CPU Registers & Instruction Execution Trace",
+        "subtopics": [
+          "PC, IR, MAR, MBR & I/O Registers",
+          "Program Status Word (PSW) & Optional Registers",
+          "Hexadecimal Program Execution Trace (Fig 3.5)",
+          "Instruction Cycle State Diagram"
+        ]
+      },
+      {
+        "id": "ch2-t3",
+        "title": "2.3 Interrupts, Interrupt Cycle & Multiple Interrupts",
+        "subtopics": [
+          "Classes of Interrupts & Software Interrupts",
+          "Polling vs. Interrupt-Driven I/O Utilization",
+          "Interrupt Cycle & State Diagram with Interrupts",
+          "Multiple Interrupts (Disable vs. Priority) & x86 IVT"
+        ]
+      },
+      {
+        "id": "ch2-t4",
+        "title": "2.4 I/O Function, DMA & Addressing Modes",
+        "subtopics": [
+          "I/O Modules, Ports & Peripheral Data Traffic",
+          "Direct Memory Access (DMA)",
+          "Separate (Isolated) I/O vs. Memory-Mapped I/O"
+        ]
+      },
+      {
+        "id": "ch2-t5",
+        "title": "2.5 Interconnection Structure & System Bus Design",
+        "subtopics": [
+          "Five Types of Data Transfers",
+          "Data, Address & Control Bus Lines (MRDC, MWRC, IORC, IOWC)",
+          "Single-Bus Bottlenecks & Multiple-Bus Hierarchies",
+          "Bus Types, Arbitration, Timing & Bus Width Calculations"
+        ]
+      }
+    ],
+    "bankCount": 60,
+    "bankTheoryCount": 26,
+    "bankPracticeCount": 34
+  },
+  {
+    "id": "ch3",
+    "number": 3,
+    "title": "Computer Memory: Cache, Internal & External Storage",
+    "shortTitle": "Ch 3: Memory, Cache & Storage",
+    "sourceDocs": [
+      "ch03_CacheMemory.pdf",
+      "ch03_Internal_External.pdf"
+    ],
+    "totalPages": 79,
+    "slideRange": "Cache (Slides 1–86) & Internal/External (Slides 1–96)",
+    "classification": "Mixed — Problem-Heavy (36% Theory / 64% Practical Calculations & Traces)",
+    "defaultTheoryRatio": 36,
+    "defaultPracticeRatio": 64,
+    "recommendedDistributionNote": "Chapter 3 spans two comprehensive slide decks with intensive practical problem-solving (64%, 32 questions per 50-Q test) including Direct/Associative/Set-Associative cache address bit partitioning, cache simulation traces, LRU/LFU replacement traces, Big/Little-Endian memory layouts, DRAM pin multiplexing, memory interleaving, disk capacity/access-time equations, and RAID capacity/fault-tolerance analysis, paired with core memory hierarchy theory (36%, 18 questions per 50-Q test).",
+    "learningObjectives": [
+      "Characterize memory systems by location, capacity, unit of transfer, access method (Sequential, Direct, Random, Associative), and the Memory Hierarchy Pyramid.",
+      "Compare SRAM vs. DRAM cell structures, volatility, refresh requirements, and ROM technologies (MROM, PROM, EPROM, EEPROM, Flash).",
+      "Determine byte ordering in memory under Big-Endian vs. Little-Endian conventions and analyze DRAM 2D matrix organization (RAS/CAS multiplexing) and Memory Interleaving.",
+      "Calculate Tag, Line/Set, and Word offset bit fields and decompose hexadecimal addresses for Direct Mapping, Fully Associative Mapping, and k-Way Set-Associative Mapping.",
+      "Simulate 2-Way Set-Associative cache read traces, execute LRU and LFU page replacement algorithms, and contrast Write-Through vs. Write-Back policies and multicore cache coherency.",
+      "Calculate magnetic disk storage capacity and total disk access time (Seek + Rotational Latency + Transfer), and evaluate SSD architecture, RAID Levels 0–6, and CD-ROM/DVD optical formats."
+    ],
+    "formulas": [
+      {
+        "name": "Direct Mapping Address Partition",
+        "formula": "Address = (s + w) bits; Block size = 2^w; Cache lines m = 2^r; Line i = j mod m; Tag = (s - r) bits, Line = r bits, Word = w bits",
+        "units": "bits",
+        "ref": "ch03_CacheMemory.pdf, pp. 18–21 (Slides 41–47)"
+      },
+      {
+        "name": "Fully Associative Address Partition",
+        "formula": "Address = (s + w) bits; Tag = s bits; Word = w bits",
+        "units": "bits",
+        "ref": "ch03_CacheMemory.pdf, p. 26 (Slides 60–61)"
+      },
+      {
+        "name": "k-Way Set-Associative Address Partition",
+        "formula": "Cache lines m = v * k; Sets v = 2^d; Set i = j mod v; Tag = (s - d) bits, Set = d bits, Word = w bits",
+        "units": "bits",
+        "ref": "ch03_CacheMemory.pdf, pp. 27–31 (Slides 62–71)"
+      },
+      {
+        "name": "Low-Order Cyclic Memory Interleaving",
+        "formula": "Bank b = A mod B; Word_in_Bank w = A div B",
+        "units": "bank index, word offset",
+        "ref": "ch03_Internal_External.pdf, p. 19 (Slide 45)"
+      },
+      {
+        "name": "Magnetic Disk Capacity",
+        "formula": "Capacity = (bytes/sector) * (avg sectors/track) * (tracks/surface) * (surfaces/platter) * (platters/disk)",
+        "units": "Bytes / GB",
+        "ref": "ch03_Internal_External.pdf, p. 23 (Slide 56)"
+      },
+      {
+        "name": "Magnetic Disk Access Time",
+        "formula": "T_access = T_seek + T_rotation + T_transfer; T_rot = 0.5 * (60/R) * 1000 ms; T_trans = (60/R) * (1/sectors_per_track) * 1000 ms",
+        "units": "milliseconds (ms)",
+        "ref": "ch03_Internal_External.pdf, p. 29 (Slides 68–69)"
+      }
+    ],
+    "misconceptions": [
+      "Confusing the number of cache lines m = 2^r (used in Direct Mapping) with the number of cache sets v = 2^d = m / k (used in k-Way Set-Associative Mapping): in 2-way set associative on the same cache size, d = r - 1 and the Tag field grows by 1 bit!",
+      "Reversing Big-Endian (most significant byte at lowest memory address) and Little-Endian (least significant byte at lowest memory address, used in x86).",
+      "Using full rotation time (60/R) instead of average half-rotation time (0.5 * 60 / R) when calculating average rotational latency for a magnetic disk.",
+      "Assuming RAID 5 requires exactly 5 disks (Slide 86 explicitly warns: 'N.B. DOES NOT MEAN 5 DISKS!!!!!') or confusing RAID 0 (striping with zero fault tolerance) with RAID 1 (mirroring)."
+    ],
+    "topics": [
+      {
+        "id": "ch3-t1",
+        "title": "3.1 Memory Characteristics, Hierarchy & Locality",
+        "subtopics": [
+          "Location, Capacity, Unit of Transfer & Access Methods",
+          "Memory Hierarchy Pyramid (Cost, Speed, Size)",
+          "Temporal, Spatial & Algorithmic Locality"
+        ]
+      },
+      {
+        "id": "ch3-t2",
+        "title": "3.2 Semiconductor Memory (SRAM, DRAM, ROM) & Endianness",
+        "subtopics": [
+          "SRAM vs. DRAM Cell Structure & Trade-offs",
+          "ROM Family (MROM, PROM, EPROM, EEPROM, Flash)",
+          "Word Alignment & Byte Ordering (Big-Endian vs. Little-Endian)"
+        ]
+      },
+      {
+        "id": "ch3-t3",
+        "title": "3.3 DRAM Organization, Enhanced DRAMs & Interleaving",
+        "subtopics": [
+          "2D DRAM Bank, Supercells & RAS/CAS Pin Multiplexing",
+          "SDRAM, DDR1/DDR2/DDR3 Prefetch & Memory Modules",
+          "Low-Order, High-Order & Mixed Memory Interleaving"
+        ]
+      },
+      {
+        "id": "ch3-t4",
+        "title": "3.4 Cache Architecture, Operations & Addressing",
+        "subtopics": [
+          "Cache Hit/Miss Operations & (S, E, B) Organization",
+          "Logical (Virtual) vs. Physical Cache Addressing"
+        ]
+      },
+      {
+        "id": "ch3-t5",
+        "title": "3.5 Cache Mapping Functions & Trace Simulation",
+        "subtopics": [
+          "Direct Mapping Address Structure & Hex Examples",
+          "Fully Associative Mapping Structure",
+          "k-Way Set-Associative Mapping & 2-Way Simulation"
+        ]
+      },
+      {
+        "id": "ch3-t6",
+        "title": "3.6 Replacement Algorithms & Cache Write Policies",
+        "subtopics": [
+          "LRU, FIFO, LFU & Random Replacement Traces",
+          "Write-Through vs. Write-Back & Multicore Coherency"
+        ]
+      },
+      {
+        "id": "ch3-t7",
+        "title": "3.7 Magnetic Disks: Geometry, Capacity & Access Time",
+        "subtopics": [
+          "Platters, Tracks, Sectors, Cylinders, CHS & LBA",
+          "Disk Capacity Calculation",
+          "Disk Access Time (Seek, Rotational Latency, Transfer)"
+        ]
+      },
+      {
+        "id": "ch3-t8",
+        "title": "3.8 Solid-State Drives (SSDs), RAID 0–6 & Optical Disks",
+        "subtopics": [
+          "SSD Pages/Blocks, FTL & Wear-Leveling",
+          "RAID Levels 0, 1, 2, 3, 4, 5, and 6",
+          "Optical Storage (CD-ROM, DVD, Blu-ray) & 2352-Byte Sector Format"
+        ]
+      }
+    ],
+    "bankCount": 60,
+    "bankTheoryCount": 19,
+    "bankPracticeCount": 41
+  },
+  {
+    "id": "ch4",
+    "number": 4,
+    "title": "The Central Processing Unit (CPU)",
+    "shortTitle": "Ch 4: CPU & x86 Architecture",
+    "sourceDocs": [
+      "ch04_CPU.pdf"
+    ],
+    "totalPages": 39,
+    "slideRange": "Slides 3.1 – 3.47 (39 pages)",
+    "classification": "Mixed (44% Theory / 56% Practical Addressing, Register & Flag Problems)",
+    "defaultTheoryRatio": 44,
+    "defaultPracticeRatio": 56,
+    "recommendedDistributionNote": "Chapter 4 combines CPU organization and Intel microprocessor evolution theory (44%, 22 questions per 50-Q test) with hands-on practical exercises in x86 Real-Mode 20-bit physical address calculation, segment overlap aliasing, sub-register aliasing (RAX/EAX/AX/AH/AL), EFLAGS/RFLAGS bit evaluation, and Protected Mode descriptor/paging translation (56%, 28 questions per 50-Q test).",
+    "learningObjectives": [
+      "Explain the internal structure of the CPU (ALU with shifter, complementer, status flags, Control Unit, Register File, Internal CPU Bus) and the four CPU functions (Fetch, Decode, Execute, Store).",
+      "Distinguish between User-Visible Registers (General Purpose, Data, Address, Condition Codes) and Control & Status Registers (PC, IR, MAR, MBR).",
+      "Trace the architectural evolution of Intel x86 processors from the 16-bit 8086/8088 through the 80286, 32-bit 80386 (IA-32), P6 family, Pentium 4/Xeon, Pentium-M, EM64T, and 64-bit x64 (IA-32e mode).",
+      "Identify the specialized roles and sub-register aliasing of IA-32 and x86-64 General-Purpose Registers (RAX/EAX/AX/AH/AL, RCX, RDX, RBX, RSP, RBP, RSI, RDI, R8–R15), Segment Registers, FPU/MMX/XMM registers, and EIP/RIP.",
+      "Evaluate Status Flags (CF, PF, AF, ZF, SF, OF), Control Flags (DF), and System Flags (TF, IF, IOPL, NT, RF, VM) in the EFLAGS/RFLAGS register.",
+      "Calculate 20-bit linear (physical) addresses from `Segment:Offset` logical addresses in Real-Address Mode, analyze segment overlap, and trace Protected Mode logical-to-linear-to-physical translation via GDT/LDT and 4 KB Paging."
+    ],
+    "formulas": [
+      {
+        "name": "Real-Mode 20-Bit Physical Address",
+        "formula": "Physical_Address = (Segment_Hex * 10h) + Offset_Hex = (Segment << 4) + Offset",
+        "units": "20-bit hexadecimal address (00000h to FFFFFh)",
+        "ref": "ch04_CPU.pdf, pp. 26–30 (Slides 3.34–3.38)"
+      },
+      {
+        "name": "Segment Overlap Aliasing",
+        "formula": " Seg_1 * 10h + Off_1 = Seg_2 * 10h + Off_2  =>  Off_2 = Off_1 - (Seg_2 - Seg_1) * 10h",
+        "units": "16-bit hexadecimal segment and offset",
+        "ref": "ch04_CPU.pdf, p. 30 (Slide 3.38)"
+      },
+      {
+        "name": "Protected Mode Linear Address",
+        "formula": "Linear_Address (32-bit) = Descriptor_Base_Address (32-bit) + Offset (32-bit)",
+        "units": "32-bit virtual/linear address",
+        "ref": "ch04_CPU.pdf, pp. 33–36 (Slides 3.42–3.45)"
+      },
+      {
+        "name": "Parity Flag (PF) Rule",
+        "formula": "PF = 1 if count_of_1_bits(Result[7:0]) mod 2 == 0 (even parity in least-significant byte), else 0",
+        "units": "binary flag (0 or 1)",
+        "ref": "ch04_CPU.pdf, pp. 20, 24 (Slides 3.25, 3.32)"
+      }
+    ],
+    "misconceptions": [
+      "Adding Segment + Offset directly as 16-bit numbers instead of shifting the 16-bit Segment left by 4 bits (multiplying by 10h = 16 decimal) before adding the 16-bit Offset in Real-Address Mode.",
+      "Assuming 32-bit index/pointer registers (ESI, EDI, EBP, ESP) have 8-bit high/low sub-registers like AH/AL in 32-bit IA-32 mode (Slide 3.22 explicitly notes ESI, EDI, EBP, ESP have only 16-bit names SI, DI, BP, SP in 32-bit mode, whereas x86-64 later added SIL, DIL, BPL, SPL).",
+      "Confusing the Carry Flag (CF, which indicates unsigned arithmetic overflow/borrow) with the Overflow Flag (OF, which indicates signed two's complement overflow).",
+      "Assuming each 64 KB segment in Real-Address Mode is disjoint: in fact, a new segment starts every 10h (16) bytes, so segments overlap heavily and logical addresses are not unique."
+    ],
+    "topics": [
+      {
+        "id": "ch4-t1",
+        "title": "4.1 CPU Organization, ALU Structure & Register Roles",
+        "subtopics": [
+          "Control Unit, ALU & Internal CPU Bus (Fig 14.2)",
+          "Fetch, Decode, Execute & Store Functions",
+          "User-Visible vs. Control and Status Registers"
+        ]
+      },
+      {
+        "id": "ch4-t2",
+        "title": "4.2 Evolution of Intel x86 Microprocessors",
+        "subtopics": [
+          "8086/8088/80186 & 80286/80386 Processors",
+          "P6 Family (Pentium Pro/II/III), Pentium 4 & Xeon",
+          "Pentium-M, EM64T & 64-Bit IA-32e Mode"
+        ]
+      },
+      {
+        "id": "ch4-t3",
+        "title": "4.3 IA-32 & x86-64 Register Architecture",
+        "subtopics": [
+          "General-Purpose Registers (GPRs) & Specialized Uses",
+          "Sub-Register Aliasing (64/32/16/8-bit Parts)",
+          "FPU (ST0–ST7), MMX, XMM, RSP/RBP & RIP Registers"
+        ]
+      },
+      {
+        "id": "ch4-t4",
+        "title": "4.4 EFLAGS / RFLAGS Status, Control & System Flags",
+        "subtopics": [
+          "Status Flags (CF, PF, AF, ZF, SF, OF)",
+          "Control Flag (DF) & System Flags (TF, IF, IOPL, VM)"
+        ]
+      },
+      {
+        "id": "ch4-t5",
+        "title": "4.5 Memory Segmentation & Real-Address Mode",
+        "subtopics": [
+          "Code, Data & Stack Segments (CS, DS, SS, ES/FS/GS)",
+          "20-Bit Logical-to-Linear Address Translation",
+          "Segment Overlap & Aliasing Calculations"
+        ]
+      },
+      {
+        "id": "ch4-t6",
+        "title": "4.6 Flat Memory Model, Protected Mode & Paging",
+        "subtopics": [
+          "Flat Memory Model (.MODEL flat)",
+          "Protected Mode Selector, GDT/LDT & Segment Descriptors",
+          "Paging, Virtual Memory Manager (VMM) & Page Faults"
+        ]
+      }
+    ],
+    "bankCount": 60,
+    "bankTheoryCount": 22,
+    "bankPracticeCount": 38
+  },
+  {
+    "id": "ch5",
+    "number": 5,
+    "title": "Data Representation and Computer Arithmetic",
+    "shortTitle": "Ch 5: Data Rep & Arithmetic",
+    "sourceDocs": [
+      "ch05_datarepresentation_computerarithmetic.pdf"
+    ],
+    "totalPages": 24,
+    "slideRange": "Slides 4.1 – 4.47 (24 pages)",
+    "classification": "Problem-Intensive (26% Theory / 74% Practical Conversions & Binary/BCD/IEEE-754 Arithmetic)",
+    "defaultTheoryRatio": 26,
+    "defaultPracticeRatio": 74,
+    "recommendedDistributionNote": "Chapter 5 is heavily quantitative and problem-driven (74%, 37 questions per 50-Q test), featuring integer and fractional radix conversions (Binary, Octal, Decimal, Hex), unsigned binary arithmetic, Sign-Magnitude, 1's and 2's Complement arithmetic, BCD addition with +6 correction, and IEEE 754 (32-bit/64-bit/8-bit) floating-point conversions, paired with foundational representation rules (26%, 13 questions per 50-Q test).",
+    "learningObjectives": [
+      "Convert integers and fractional numbers accurately between Binary (base 2), Octal (base 8), Decimal (base 10), and Hexadecimal (base 16).",
+      "Perform unsigned binary addition (including fractional binary numbers), subtraction with borrow, and multiplication.",
+      "Represent signed integers in Sign-Magnitude, One's Complement, and Two's Complement formats, and execute signed addition/subtraction (including end-around carry in 1's complement and carry discard in 2's complement).",
+      "Encode decimal numbers in Unpacked and Packed BCD (Binary-Coded Decimal), identify forbidden 4-bit nibbles (1010–1111), and perform multi-digit BCD addition using the +6 (0110_2) decade correction rule.",
+      "Decode and encode real numbers in IEEE 754 Single Precision (32-bit, bias 127), Double Precision (64-bit, bias 1023), and the slide deck's 8-bit Floating-Point format (1-bit sign, 3-bit exponent with bias 3, 4-bit mantissa), and identify special encodings (±0, ±∞, NaN)."
+    ],
+    "formulas": [
+      {
+        "name": "Positional Radix Value",
+        "formula": "Value = Sum_{i=-m}^{n-1} d_i * R^i",
+        "units": "base-10 value",
+        "ref": "ch05_datarepresentation_computerarithmetic.pdf, pp. 2–5 (Slides 4.3–4.9)"
+      },
+      {
+        "name": "Two's Complement Negation",
+        "formula": "Twos_Comp(A) = Ones_Comp(A) + 1 = (~A) + 1",
+        "units": "n-bit signed binary",
+        "ref": "ch05_datarepresentation_computerarithmetic.pdf, pp. 13–15 (Slides 4.26–4.30)"
+      },
+      {
+        "name": "BCD Addition Decade Correction",
+        "formula": "If 4-bit Decade_Sum > 9 or Carry_Out == 1: Decade_Corrected = Decade_Sum + 0110_2 (+6)",
+        "units": "4-bit BCD nibbles",
+        "ref": "ch05_datarepresentation_computerarithmetic.pdf, pp. 16–17 (Slides 4.31–4.34)"
+      },
+      {
+        "name": "IEEE 754 Single Precision (32-bit)",
+        "formula": "X = (-1)^S * (1.m) * 2^(e - 127)  [1-bit S, 8-bit e = E + 127, 23-bit fraction m]",
+        "units": "32-bit floating-point",
+        "ref": "ch05_datarepresentation_computerarithmetic.pdf, pp. 18–20 (Slides 4.37–4.41)"
+      },
+      {
+        "name": "IEEE 754 Double Precision (64-bit)",
+        "formula": "X = (-1)^S * (1.m) * 2^(e - 1023)  [1-bit S, 11-bit e = E + 1023, 52-bit fraction m]",
+        "units": "64-bit floating-point",
+        "ref": "ch05_datarepresentation_computerarithmetic.pdf, p. 21 (Slide 4.43)"
+      },
+      {
+        "name": "Slide 8-Bit Floating-Point Format",
+        "formula": "[1-bit Sign | 3-bit Exponent (bias = 3) | 4-bit Mantissa fraction after 1.]",
+        "units": "8-bit custom float",
+        "ref": "ch05_datarepresentation_computerarithmetic.pdf, p. 22 (Slides 4.44–4.45)"
+      }
+    ],
+    "misconceptions": [
+      "When converting a decimal fraction to binary/hex/octal by repeated multiplication, reading the integer parts from bottom-to-top instead of top-to-bottom (integers use division and read bottom-to-top; fractions use multiplication and read top-to-bottom!).",
+      "In One's Complement addition of negative numbers, forgetting to add the end-around carry out of the MSB back into the LSB (Slide 4.28), whereas in Two's Complement addition the carry out of the MSB is discarded (Slide 4.29).",
+      "In BCD addition, forgetting to add 0110_2 (6) to a 4-bit decade when the binary sum produces a carry out to the next decade even if the 4-bit nibble itself is <= 9 (e.g., 8 + 9 = 17 = 1_0001_2 requires +0110_2 -> 0001_0111_BCD = 17, Slide 4.34).",
+      "Including the implicit leading '1' before the binary point inside the 23-bit mantissa field m of a normalized IEEE 754 floating-point number (only the fractional bits after '1.' are stored in m)."
+    ],
+    "topics": [
+      {
+        "id": "ch5-t1",
+        "title": "5.1 Number Systems & Base Conversions",
+        "subtopics": [
+          "Binary, Octal, Decimal & Hexadecimal Systems",
+          "Converting Any Base to Decimal (Integer & Fractional)",
+          "Decimal Integer & Fraction to Binary, Octal & Hex",
+          "Direct Binary <-> Hex and Binary <-> Octal Grouping"
+        ]
+      },
+      {
+        "id": "ch5-t2",
+        "title": "5.2 Unsigned Binary Arithmetic",
+        "subtopics": [
+          "Binary Addition (Integer & Fractional)",
+          "Binary Subtraction with Borrow",
+          "Binary Multiplication"
+        ]
+      },
+      {
+        "id": "ch5-t3",
+        "title": "5.3 Signed Integer Representations & Arithmetic",
+        "subtopics": [
+          "Sign-Magnitude Representation & Drawbacks",
+          "One's Complement & End-Around Carry Addition",
+          "Two's Complement Negation, Addition & Subtraction"
+        ]
+      },
+      {
+        "id": "ch5-t4",
+        "title": "5.4 Binary-Coded Decimal (BCD) & Arithmetic",
+        "subtopics": [
+          "Unpacked vs. Packed BCD & Forbidden Codes",
+          "BCD Addition & +6 (0110_2) Decade Correction"
+        ]
+      },
+      {
+        "id": "ch5-t5",
+        "title": "5.5 Floating-Point Representation (IEEE 754 & 8-Bit)",
+        "subtopics": [
+          "IEEE 754 32-Bit Single & 64-Bit Double Precision",
+          "Special Values (±0, ±Infinity, NaN)",
+          "IEEE 754 Worked Conversions & 8-Bit Float Format"
+        ]
+      }
+    ],
+    "bankCount": 70,
+    "bankTheoryCount": 15,
+    "bankPracticeCount": 55
+  },
+  {
+    "id": "ch6",
+    "number": 6,
+    "title": "x86/x86-64 Assembly Language & CPU Instruction Set",
+    "shortTitle": "Ch 6: Assembly & Instruction Set",
+    "sourceDocs": [
+      "ch06_hopngu_phan1.pdf",
+      "ch06_part1_2.pdf"
+    ],
+    "totalPages": 36,
+    "slideRange": "Part 1A (Slides 6.15–6.57) & Part 1B (Slides 1, 21–54)",
+    "classification": "Code-Tracing & Practical-Heavy (30% Theory / 70% Practical Assembly Tracing & Addressing)",
+    "defaultTheoryRatio": 30,
+    "defaultPracticeRatio": 70,
+    "recommendedDistributionNote": "Chapter 6 combines two lecture decks on NASM assembly programming and the x86/x86-64 instruction set. Because exams heavily test code execution tracing, register/flag states, effective address calculation, bitwise masking, and MUL/IMUL/DIV/IDIV register pairs, 70% (35 questions per 50-Q test) are practical assembly-tracing and calculation problems and 30% (15 questions per 50-Q test) test assembler structure, directives, and instruction semantics.",
+    "learningObjectives": [
+      "Apply bitwise masking idioms (AND to clear/isolate bits, OR to set bits, XOR to toggle/invert bits, SHL/SHR/SAR/ROL/ROR to shift/rotate bits).",
+      "Explain the role of an assembler (NASM, MASM, GAS, FASM, TASM), execute the Linux 64-bit (`elf64`) and 32-bit (`elf_i386`) NASM/LD build pipeline, and structure `.data`, `.bss`, and `.text` sections.",
+      "Calculate memory allocation sizes and initial byte values for NASM `DX` (`db, dw, dd, dq, dt`), `times`, and `RESX` (`resb, resw`) directives.",
+      "Identify Register, Immediate, Direct, and x86 Scaled-Index Indirect addressing modes and compute effective addresses `Addr = Base + (Index * Scale) + Displacement`.",
+      "Trace data transfer (`MOV, MOVZX, MOVSX, XCHG, LEA, PUSH, POP`) and arithmetic (`ADD, SUB, INC, DEC, NEG, CMP`) instructions and determine exact register values and `CF, ZF, SF, OF` status flags.",
+      "Trace conditional branching (`JE/JZ, JNE/JNZ, JG/JL, JGE/JLE, JA/JB`), procedure calls (`CALL/RET`), and counter loops (`LOOP` with `RCX/ECX`).",
+      "Trace 8-bit, 16-bit, and 32-bit unsigned/signed multiplication and division (`MUL, IMUL` [1, 2, and 3 operands], `DIV, IDIV`) across implicit register pairs (`AX`, `DX:AX`, `EDX:EAX`, `AL/AH`)."
+    ],
+    "formulas": [
+      {
+        "name": "x86 Scaled-Index Effective Address",
+        "formula": "Addr(ind) = Base + (Index * Scale) + Disp",
+        "units": "memory byte address",
+        "ref": "ch06_hopngu_phan1.pdf, p. 10 (Slide 6.35)"
+      },
+      {
+        "name": "Bitwise Mask Idioms (Bit k, 0-indexed)",
+        "formula": "Set bit k: x | (1<<k); Clear bit k: x & ~(1<<k); Toggle bit k: x ^ (1<<k); Keep low 4 bits: x & 0x0F",
+        "units": "8-bit binary",
+        "ref": "ch06_hopngu_phan1.pdf, p. 1 (Slides 6.15–6.16)"
+      },
+      {
+        "name": "MUL / IMUL Destination Register Pairs",
+        "formula": "8-bit: AL * src8 -> AX; 16-bit: AX * src16 -> DX:AX; 32-bit: EAX * src32 -> EDX:EAX",
+        "units": "16/32/64-bit product",
+        "ref": "ch06_part1_2.pdf, pp. 10–13 (Slides 44–49)"
+      },
+      {
+        "name": "DIV / IDIV Dividend, Quotient & Remainder",
+        "formula": "8-bit: AX / src8 -> AL (Quot), AH (Rem); 16-bit: DX:AX / src16 -> AX (Quot), DX (Rem); 32-bit: EDX:EAX / src32 -> EAX (Quot), EDX (Rem)",
+        "units": "quotient and remainder registers",
+        "ref": "ch06_part1_2.pdf, pp. 10, 13–14 (Slides 44, 50–52)"
+      }
+    ],
+    "misconceptions": [
+      "Assuming `INC` and `DEC` update all arithmetic status flags: Slide 6.54 explicitly notes that `INC` (and `DEC`) updates relevant arithmetic flags (ZF, SF, OF, AF, PF) but DOES NOT modify the Carry Flag (`CF`)!",
+      "Confusing `MOVZX` (zero-extension, filling upper bits with 0s regardless of sign) with `MOVSX` (sign-extension, replicating the sign bit MSB into upper bits, so `0FFh` becomes `FFFFFFFFh`, Slide 22 of `ch06_part1_2.pdf`).",
+      "Confusing `LEA reg, [addr]` (which loads the effective address `addr` itself into `reg` without dereferencing memory) with `MOV reg, [addr]` (which loads the memory contents at `addr` into `reg`).",
+      "Forgetting to clear `DX` (`mov dx, 0`) or `EDX` (`xor edx, edx`) before executing a 16-bit or 32-bit unsigned `DIV` instruction, since `DIV` divides the full 32-bit `DX:AX` or 64-bit `EDX:EAX` dividend!"
+    ],
+    "topics": [
+      {
+        "id": "ch6-t1",
+        "title": "6.1 Bitwise Masking, Shift & Rotate Operations",
+        "subtopics": [
+          "Bitwise AND, OR, XOR, NOT Masking Idioms",
+          "Logical & Arithmetic Shifts (SHL, SAL, SHR, SAR)",
+          "Rotate Instructions (ROL, ROR, RCL, RCR)"
+        ]
+      },
+      {
+        "id": "ch6-t2",
+        "title": "6.2 Assemblers, NASM Build Pipeline & Program Structure",
+        "subtopics": [
+          "Major Assemblers (MASM, GAS, FASM, TASM, NASM)",
+          "Linux 64-Bit (elf64) & 32-Bit (elf_i386) Build Commands",
+          "NASM Sections (.data, .bss, .text) & Statement Types"
+        ]
+      },
+      {
+        "id": "ch6-t3",
+        "title": "6.3 Addressing Modes & Effective Address Calculations",
+        "subtopics": [
+          "Register, Immediate & Direct Addressing Modes",
+          "x86 Scaled-Index Indirect Addressing (Base + Index*Scale + Disp)",
+          "x86lite / x86-64 Register File & Size Prefixes"
+        ]
+      },
+      {
+        "id": "ch6-t4",
+        "title": "6.4 Data Allocation Directives (DX, times, RESX)",
+        "subtopics": [
+          "Initialized Data Directives (db, dw, dd, dq, dt)",
+          "String Declarations, Radix Suffixes & `times` Qualifier",
+          "Uninitialized Data Directives (resb, resw, resd, resq)"
+        ]
+      },
+      {
+        "id": "ch6-t5",
+        "title": "6.5 Data Transfer & Arithmetic Instructions with Status Flags",
+        "subtopics": [
+          "MOV, MOVZX, MOVSX, XCHG, LEA, PUSH & POP",
+          "ADD, ADC, SUB, SBB, INC, DEC, NEG & CMP",
+          "Evaluating CF, ZF, SF, OF on 8-Bit Arithmetic & CMP"
+        ]
+      },
+      {
+        "id": "ch6-t6",
+        "title": "6.6 Program Control, Conditional Jumps, Calls & Loops",
+        "subtopics": [
+          "Unconditional & Conditional Jumps (JMP, JE/JZ, JG/JL, JA/JB)",
+          "Procedure Calls (CALL, RET, INT, IRET)",
+          "Counter Loops (LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ)"
+        ]
+      },
+      {
+        "id": "ch6-t7",
+        "title": "6.7 Multiplication & Division Instructions (MUL, IMUL, DIV, IDIV)",
+        "subtopics": [
+          "Unsigned Multiplication (MUL 8/16/32-bit into AX, DX:AX, EDX:EAX)",
+          "Signed Multiplication (IMUL 1, 2, and 3-Operand Forms)",
+          "Unsigned & Signed Division (DIV, IDIV Quotient & Remainder)"
+        ]
+      }
+    ],
+    "bankCount": 60,
+    "bankTheoryCount": 15,
+    "bankPracticeCount": 45
+  }
+]

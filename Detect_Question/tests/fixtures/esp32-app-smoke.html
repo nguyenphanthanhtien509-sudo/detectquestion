@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<title>Detect Question — Kiểm thử ESP32</title>
+<style>
+  body { max-width: 760px; margin: 64px auto; padding: 0 24px; font: 20px/1.6 system-ui; color: #172033; background: #f5f7fb; }
+  .que { padding: 28px; border: 1px solid #d9dfeb; border-radius: 16px; background: white; }
+  h1 { font-size: 26px; }
+  .no { font-size: 18px; color: #53627a; }
+  .qtext { font-size: 26px; font-weight: 600; margin-bottom: 20px; }
+  .answer > div { margin: 12px 0; }
+  input { margin-right: 12px; }
+  .hint { font-size: 16px; color: #53627a; }
+</style>
+<h1>Kiểm thử Detect Question qua ESP32</h1>
+<p class="hint">Bài mẫu có đáp án B (4). Nhấn Alt + M để kiểm tra một model; Alt + N để kiểm tra luồng đầy đủ.</p>
+<div class="que multichoice" id="question-esp32-smoke">
+  <div class="info"><h3 class="no">Câu 1</h3></div>
+  <div class="content"><div class="formulation clearfix">
+    <div class="qtext">2 + 2 bằng bao nhiêu?</div>
+    <div class="ablock"><div class="answer">
+      <div class="r0"><input type="radio" name="smoke-answer" id="smoke-a" value="0"><label for="smoke-a">A. 3</label></div>
+      <div class="r1"><input type="radio" name="smoke-answer" id="smoke-b" value="1"><label for="smoke-b">B. 4</label></div>
+      <div class="r0"><input type="radio" name="smoke-answer" id="smoke-c" value="2"><label for="smoke-c">C. 5</label></div>
+      <div class="r1"><input type="radio" name="smoke-answer" id="smoke-d" value="3"><label for="smoke-d">D. 6</label></div>
+    </div></div>
+  </div></div>
+</div>
+</html>

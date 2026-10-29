@@ -1,0 +1,70 @@
+{
+  "manifest_version": 3,
+  "name": "Demo",
+  "version": "1.0",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "contextMenus",
+    "clipboardWrite",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/background/index.js"
+  },
+  "commands": {
+    "solve-single-question": {
+      "suggested_key": {
+        "default": "Alt+N",
+        "mac": "Alt+N"
+      },
+      "description": "Solve the current question"
+    },
+    "solve-single-model": {
+      "suggested_key": {
+        "default": "Alt+M",
+        "mac": "Alt+M"
+      },
+      "description": "Get one unverified model answer for the current question"
+    },
+    "solve-continuous": {
+      "suggested_key": {
+        "default": "Alt+K",
+        "mac": "Alt+K"
+      },
+      "description": "Translate this entire page automatically"
+    }
+  },
+  "action": {},
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "src/config/runtime-config.js",
+        "src/shared/MessageActions.js",
+        "src/content/core/TextUtils.js",
+        "src/content/core/DomMediaExtractor.js",
+        "src/content/scanner/MoodleScanner.js",
+        "src/content/scanner/QuizCardScanner.js",
+        "src/content/scanner/AnchorBasedScanner.js",
+        "src/content/scanner/GenericDomScanner.js",
+        "src/content/scanner/ExamDomScanner.js",
+        "src/content/clicker/DomAnswerClicker.js",
+        "src/content/solver/AdaptiveDebateApiClient.js",
+        "src/content/solver/ContinuousSolveRunner.js",
+        "src/content/ui/StealthToastNotifier.js",
+        "src/content/ui/CaptureSelectionOverlay.js",
+        "src/content/navigation/MoodleNavigationHandler.js",
+        "src/content/controller/HotKeyManager.js",
+        "src/content/index.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ]
+}
