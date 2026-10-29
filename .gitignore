@@ -1,0 +1,5 @@
+.pio/
+.vscode/
+gateway-config.json
+*.local.json
+backups/
