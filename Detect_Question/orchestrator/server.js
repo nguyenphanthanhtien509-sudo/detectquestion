@@ -185,6 +185,8 @@ function createServer(options = {}) {
   // Backward uses the same Gemini-compatible backend and credentials as the
   // forward slots. There is no OpenAI model/provider path in production.
   const backwardProvider = options.backwardProvider || forwardProvider;
+  const firmwareLogger = data => debug('gateway.version', data);
+  forwardProvider.transport?.events?.on('firmware', firmwareLogger);
   const backwardModels = options.backwardModels || parseJsonStringArrayEnv('ORCHESTRATOR_BACKWARD_GEMINI_MODELS', BACKWARD_GEMINI_MODELS);
   const configuredFallbackPools = options.fallbackPools || parseJsonEnv('ORCHESTRATOR_FALLBACK_POOLS', undefined);
   // Preserve all per-slot Gemini recovery pools. The Gemini Backward override
@@ -272,10 +274,12 @@ function createServer(options = {}) {
   server.on('listening', () => {
     const address = server.address();
     debug('server.listening', {
+      appVersion: require('../desktop/AppVersion').APP_VERSION,
       host: typeof address === 'object' && address ? address.address : null,
       port: typeof address === 'object' && address ? address.port : null
     });
   });
+  server.on('close', () => forwardProvider.transport?.events?.off('firmware', firmwareLogger));
   return server;
 }
 

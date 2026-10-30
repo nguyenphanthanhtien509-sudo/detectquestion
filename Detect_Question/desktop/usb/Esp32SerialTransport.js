@@ -137,6 +137,10 @@ class Esp32SerialTransport {
     for (;;) {
       const status = await this.exchange({ id: randomUUID(), type: 'hello' }, 'status', signal);
       if (status.device !== 'detect-question-esp32s3') throw error('USB_WRONG_DEVICE');
+      if (typeof status.firmware === 'string' && this.firmware !== status.firmware) {
+        this.firmware = status.firmware.slice(0, 64);
+        this.events.emit('firmware', { firmwareVersion: this.firmware });
+      }
       this.maxBodyBytes = Math.min(1500000, Number(status.maxBodyBytes) || 0);
       this.maxResponseBytes = Math.min(262144, Number(status.maxResponseBytes) || 0);
       const chunkBytes = Number(status.chunkBytes);

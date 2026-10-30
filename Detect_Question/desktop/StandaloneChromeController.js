@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { APP_VERSION } = require('./AppVersion');
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
@@ -37,7 +38,7 @@ function writeAnswerCache(key, item) {
 }
 
 function log(event, data = {}) {
-  try { fs.mkdirSync(runtimeDirectory, { recursive: true }); fs.appendFileSync(standaloneLogFile, `${JSON.stringify({ timestamp: new Date().toISOString(), event, ...data })}\n`, 'utf8'); } catch (_) {}
+  try { fs.mkdirSync(runtimeDirectory, { recursive: true }); fs.appendFileSync(standaloneLogFile, `${JSON.stringify({ timestamp: new Date().toISOString(), event, ...data, appVersion: APP_VERSION })}\n`, 'utf8'); } catch (_) {}
   console.log(`[standalone] ${event} ${JSON.stringify(data)}`);
 }
 

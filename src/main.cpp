@@ -191,8 +191,9 @@ void status(const String &id) {
   StaticJsonDocument<1536> doc;
   doc["v"] = 1; doc["id"] = id; doc["type"] = "status";
   doc["device"] = "detect-question-esp32s3";
-  doc["firmware"] = "0.2.9";
+  doc["firmware"] = "0.3.0";
   doc["wifiConnected"] = WiFi.status() == WL_CONNECTED;
+  doc["wifiHostname"] = WiFi.getHostname() ? WiFi.getHostname() : "";
   doc["wifiStatusCode"] = int(WiFi.status());
   doc["wifiTxPowerQuarterDbm"] = int(WiFi.getTxPower());
   doc["clockReady"] = time(nullptr) > 1700000000;
@@ -298,7 +299,10 @@ void networkTask(void *) {
   else if (time(nullptr) <= 1700000000) error = "CLOCK_NOT_READY";
   else if (!validHttps(url) || !safeHeader(key) || ca.length() < 100) error = "NOT_CONFIGURED";
   else {
-    if (sessionInvalidated.exchange(false) || cachedUrl != url || cachedKey != key || cachedCa != ca) closeSession();
+    if (sessionInvalidated.exchange(false) || cachedUrl != url || cachedKey != key || cachedCa != ca ||
+        (sessionIdleSince && (millis() - sessionIdleSince > 3000))) {
+      closeSession();
+    }
     // A socket can look connected after the server/mobile NAT has expired it.
     // Reconnect before a new POST after an idle gap; never replay a sent POST.
     if (cachedTls && sessionIdleSince && millis() - sessionIdleSince >= 15000) closeSession();
@@ -524,6 +528,7 @@ void setup() {
     WiFi.setTxPower(WIFI_POWER_8_5dBm);
   }, ARDUINO_EVENT_WIFI_STA_START);
   WiFi.persistent(false);
+  WiFi.setHostname("USB");
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
   WiFi.setTxPower(WIFI_POWER_8_5dBm);
