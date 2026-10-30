@@ -87,6 +87,58 @@ async function testEmergencySingleModelUsesExactlyOneForwardModel() {
   assert.equal(result.provenance[0].requestedModel, 'model-a');
 }
 
+async function testSingleModelBoundedSchemaRepair() {
+  const malformed = JSON.parse(initial('B'));
+  delete malformed.uncertainty;
+  const invalid = JSON.stringify(malformed);
+  for (const scenario of ['repaired', 'still-invalid', 'network-error', 'disabled', 'cancelled', 'deadline']) {
+    let calls = 0;
+    const controller = new AbortController();
+    const events = [];
+    const now = Date.now;
+    let offset = 0;
+    const provider = { async complete({ model, messages }) {
+      calls += 1;
+      if (scenario === 'network-error') throw Object.assign(new Error('HTTPS failed'), { code: 'HTTPS_FAILED' });
+      if (calls === 1 && scenario === 'cancelled') controller.abort();
+      if (calls === 1 && scenario === 'deadline') offset = 120001;
+      if (calls === 2) {
+        assert.ok(messages[1].content.includes('previousResponse'));
+        assert.ok(messages[1].content.includes('INITIAL_UNCERTAINTY_REQUIRED'));
+      }
+      return { actualModel: model, content: calls === 2 && scenario === 'repaired' ? initial('B') : invalid };
+    } };
+    const engine = makeEngine([], { provider, maxSchemaRepairAttempts: scenario === 'disabled' ? 0 : 2 });
+    try {
+      if (scenario === 'deadline') Date.now = () => now() + offset;
+      const result = await engine.solveSingleModel({ requestId: `repair-${scenario}`, question }, controller.signal, event => events.push(event));
+      const shouldRepair = ['repaired', 'still-invalid'].includes(scenario);
+      assert.equal(calls, shouldRepair ? 2 : 1, scenario);
+      assert.equal(result.metrics.schemaRepairCalls, shouldRepair ? 1 : 0, scenario);
+      assert.equal(result.metrics.logicalInferenceCalls, calls);
+      assert.equal(result.provenance.length, calls);
+      assert.ok(result.provenance.every(item => item.requestedModel === 'model-a'));
+      assert.equal(result.finalDecision.eligibleForAutoApply, false);
+      if (scenario === 'repaired') {
+        assert.equal(result.status, 'SINGLE_MODEL_UNVERIFIED');
+        assert.equal(result.answer, 'B');
+        assert.equal(result.metrics.schemaRepairSuccesses, 1);
+        assert.equal(result.metrics.invalidResponses, 1);
+        assert.equal(result.provenance[0].validationError.code, 'INITIAL_UNCERTAINTY_REQUIRED');
+        assert.equal(result.provenance[1].validationStatus, 'valid');
+      } else {
+        assert.equal(result.answer, null);
+        if (scenario === 'still-invalid') {
+          assert.equal(result.status, STATES.INVALID_RESPONSE);
+          assert.equal(result.metrics.schemaRepairFailures, 1);
+          assert.equal(result.metrics.invalidResponses, 2);
+        }
+      }
+      assert.equal(events.some(event => event.type === 'single_model_schema_repair_completed'), shouldRepair);
+    } finally { Date.now = now; }
+  }
+}
+
 async function testCrossExaminationRunsInParallelRound() {
   const result = await makeEngine([
     [initial('A'), initial('B'), initial('C')],
@@ -1013,6 +1065,7 @@ async function testHttpSecurityContract() {
 (async () => {
   await testInitialConsensusIsNotOverclaimed();
   await testEmergencySingleModelUsesExactlyOneForwardModel();
+  await testSingleModelBoundedSchemaRepair();
   await testCrossExaminationRunsInParallelRound();
   await testNoTwoOfThreeAcceptanceAfterTimeout();
   await testMalformedCriticIsInvalidNotConsensus();

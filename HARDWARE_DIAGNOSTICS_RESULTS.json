@@ -1,0 +1,230 @@
+{
+  "testedAt": "2026-10-30T05:00:31.026Z",
+  "results": [
+    {
+      "test": "initial-status",
+      "firmware": "0.2.9",
+      "wifiConnected": true,
+      "psramReady": true
+    },
+    {
+      "test": "single_model",
+      "status": "SINGLE_MODEL_UNVERIFIED",
+      "durationMs": 3990,
+      "answerPresent": true,
+      "attempts": [
+        {
+          "model": "gemini-2.5-flash-lite",
+          "status": "received",
+          "queueWaitMs": 1,
+          "serviceMs": 3986,
+          "gateway": {
+            "dnsMs": 251,
+            "connectMs": 2256,
+            "postAndHeadersMs": 3951,
+            "bodyMs": 13,
+            "networkMs": 3965,
+            "idleMs": 0,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 720,
+            "heapBefore": 255012,
+            "freeHeap": 197568,
+            "largestHeapBlock": 180212,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": false,
+            "wifiConnected": true
+          }
+        }
+      ]
+    },
+    {
+      "test": "single_model",
+      "status": "SINGLE_MODEL_UNVERIFIED",
+      "durationMs": 1418,
+      "answerPresent": true,
+      "attempts": [
+        {
+          "model": "gemini-2.5-flash-lite",
+          "status": "received",
+          "queueWaitMs": 0,
+          "serviceMs": 1417,
+          "gateway": {
+            "dnsMs": 0,
+            "connectMs": 0,
+            "postAndHeadersMs": 1382,
+            "bodyMs": 11,
+            "networkMs": 1396,
+            "idleMs": 38,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 642,
+            "heapBefore": 203872,
+            "freeHeap": 194564,
+            "largestHeapBlock": 176116,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": true,
+            "wifiConnected": true
+          }
+        }
+      ]
+    },
+    {
+      "test": "adaptive_debate",
+      "status": "AI_VERIFIED",
+      "durationMs": 11870,
+      "answerPresent": true,
+      "attempts": [
+        {
+          "model": "gemini-3.8-flash",
+          "status": "received",
+          "queueWaitMs": 0,
+          "serviceMs": 5520,
+          "gateway": {
+            "dnsMs": 0,
+            "connectMs": 0,
+            "postAndHeadersMs": 5483,
+            "bodyMs": 12,
+            "networkMs": 5496,
+            "idleMs": 32,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 657,
+            "heapBefore": 200700,
+            "freeHeap": 191596,
+            "largestHeapBlock": 176116,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": true,
+            "wifiConnected": true
+          }
+        },
+        {
+          "model": "gemini-2.5-flash",
+          "status": "received",
+          "queueWaitMs": 5520,
+          "serviceMs": 1433,
+          "gateway": {
+            "dnsMs": 0,
+            "connectMs": 0,
+            "postAndHeadersMs": 1393,
+            "bodyMs": 13,
+            "networkMs": 1407,
+            "idleMs": 24,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 654,
+            "heapBefore": 197920,
+            "freeHeap": 188640,
+            "largestHeapBlock": 172020,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": true,
+            "wifiConnected": true
+          }
+        },
+        {
+          "model": "gemini-2.5-flash-lite",
+          "status": "received",
+          "queueWaitMs": 6953,
+          "serviceMs": 1537,
+          "gateway": {
+            "dnsMs": 0,
+            "connectMs": 0,
+            "postAndHeadersMs": 1502,
+            "bodyMs": 11,
+            "networkMs": 1515,
+            "idleMs": 20,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 659,
+            "heapBefore": 194944,
+            "freeHeap": 185656,
+            "largestHeapBlock": 163828,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": true,
+            "wifiConnected": true
+          }
+        },
+        {
+          "model": "gemini-3.6-flash",
+          "status": "received",
+          "queueWaitMs": 0,
+          "serviceMs": 3374,
+          "gateway": {
+            "dnsMs": 0,
+            "connectMs": 0,
+            "postAndHeadersMs": 3316,
+            "bodyMs": 16,
+            "networkMs": 3333,
+            "idleMs": 43,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 1036,
+            "heapBefore": 191960,
+            "freeHeap": 182688,
+            "largestHeapBlock": 163828,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": true,
+            "wifiConnected": true
+          }
+        }
+      ]
+    },
+    {
+      "test": "cancel",
+      "cancelHttpStatus": 202,
+      "hostReturnMs": 13,
+      "status": "CANCELLED",
+      "durationMs": 1008,
+      "answerPresent": false,
+      "attempts": [
+        {
+          "model": "gemini-2.5-flash-lite",
+          "status": "CANCELLED",
+          "queueWaitMs": 0,
+          "serviceMs": 1008,
+          "gateway": null
+        }
+      ]
+    },
+    {
+      "test": "after-cancel",
+      "status": "SINGLE_MODEL_UNVERIFIED",
+      "durationMs": 4497,
+      "answerPresent": true,
+      "attempts": [
+        {
+          "model": "gemini-2.5-flash-lite",
+          "status": "received",
+          "queueWaitMs": 0,
+          "serviceMs": 4496,
+          "gateway": {
+            "dnsMs": 1,
+            "connectMs": 2606,
+            "postAndHeadersMs": 3840,
+            "bodyMs": 411,
+            "networkMs": 4253,
+            "idleMs": 0,
+            "httpCode": 200,
+            "tlsCode": 0,
+            "bodyResult": 671,
+            "heapBefore": 231060,
+            "freeHeap": 176612,
+            "largestHeapBlock": 159732,
+            "cancelDrainMs": 0,
+            "dnsFallback": false,
+            "reusedConnection": false,
+            "wifiConnected": true
+          }
+        }
+      ],
+      "busy": false,
+      "lastCancelDrainMs": 198
+    }
+  ]
+}

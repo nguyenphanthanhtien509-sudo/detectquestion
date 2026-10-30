@@ -40,7 +40,7 @@ function readDebatePolicy(options = {}) {
 
 function stateError(error) {
   if (error?.code === 'CANCELLED') return 'cancelled';
-  if (error?.code === 'MODEL_TIMEOUT') return 'timeout';
+  if (error?.code === 'MODEL_TIMEOUT' || error?.code === 'GLOBAL_DEADLINE') return 'timeout';
   if (error?.code === 'INVALID_RESPONSE') return 'invalid_response';
   return 'provider_error';
 }
@@ -584,8 +584,25 @@ class AdaptiveDebateOrchestrator {
       backups: [], messages: this.initialMessages(request.question), question: request.question,
       signal, deadlineAt, reserved: new Set([model]), primaryTimeoutMs: this.singleModelTimeoutMs
     });
-    const response = this.validateInitialResponse(slot.response, request.question);
-    const provenance = slot.attempts.map(item => item.provenance);
+    let response = this.validateInitialResponse(slot.response, request.question);
+    const attempts = [...slot.attempts];
+    let repair = null;
+    // Repair only a received malformed response, once, using the same model.
+    // Network failures are not replayed and the original deadline still applies.
+    if (response.kind === 'invalid_response' && response.content && this.maxSchemaRepairAttempts > 0 &&
+        !signal?.aborted && deadlineAt - Date.now() >= 250) {
+      safeEmit(onEvent, { type: 'single_model_schema_repair_started', model, remainingBudgetMs: Math.max(0, deadlineAt - Date.now()) });
+      repair = await this.callSlot({
+        slotId: 'single_model_A_repair', stage: 'schema_repair', round: 0,
+        primary: model, backups: [], messages: this.initialRepairMessages(request.question, response),
+        question: request.question, signal, deadlineAt, reserved: new Set([model])
+      });
+      response = this.validateInitialResponse(repair.response, request.question);
+      response.provenance.schemaRepairAttempt = 1;
+      attempts.push(...repair.attempts);
+      safeEmit(onEvent, { type: 'single_model_schema_repair_completed', model, validationStatus: response.provenance.validationStatus });
+    }
+    const provenance = attempts.map(item => item.provenance);
     const valid = response.kind === 'valid';
     const answer = valid ? response.value.answer.answer : null;
     const failureStatus = response.kind === 'cancelled' ? STATES.CANCELLED
@@ -619,11 +636,14 @@ class AdaptiveDebateOrchestrator {
       metrics: {
         initialCalls: 1, debateCalls: 0, judgeCalls: 0, backwardCalls: 0,
         fallbackCalls: 0, fallbackSuccesses: 0, fallbackFailures: 0,
-        logicalInferenceCalls: 1,
+        schemaRepairCalls: repair ? 1 : 0,
+        schemaRepairSuccesses: repair && valid ? 1 : 0,
+        schemaRepairFailures: repair && !valid ? 1 : 0,
+        logicalInferenceCalls: repair ? 2 : 1,
         physicalHttpAttempts: provenance.filter(item => !item.notStarted).reduce((sum, item) => sum + 1 + (item.retryAttempts || 0), 0),
         successfulResponses: valid ? 1 : 0,
-        invalidResponses: response.kind === 'invalid_response' ? 1 : 0,
-        modelTimeouts: response.kind === 'timeout' ? 1 : 0,
+        invalidResponses: provenance.filter(item => item.validationStatus === 'invalid_response').length,
+        modelTimeouts: attempts.filter(item => item.kind === 'timeout').length,
         selectedSolvingStrategy: 'SINGLE_MODEL_EMERGENCY',
         promptTokens: usage.hasPrompt ? usage.promptTokens : null,
         completionTokens: usage.hasCompletion ? usage.completionTokens : null,
@@ -647,18 +667,29 @@ class AdaptiveDebateOrchestrator {
     const providerName = options.providerName || null;
     const startedAt = Date.now();
     const controller = new AbortController();
-    const abortFromParent = () => controller.abort();
+    const abortFromParent = () => controller.abort(Object.assign(new Error('Cancelled'), { code: 'CANCELLED' }));
     signal?.addEventListener('abort', abortFromParent, { once: true });
     const deadlineAt = options.deadlineAt || Number.POSITIVE_INFINITY;
     const configuredTimeout = Number(options.timeoutMs) || 45_000;
-    const remaining = Math.max(0, deadlineAt - Date.now());
-    const timeoutMs = Math.min(configuredTimeout, remaining);
-    const timeoutReason = remaining <= configuredTimeout ? 'GLOBAL_DEADLINE' : 'MODEL_TIMEOUT';
+    const provider = options.provider || this.provider;
+    let timeoutMs, timeoutReason, release, queueTimer, queueWaitMs = 0;
     let timer;
     let timedOut = false;
     try {
+      if (signal?.aborted) throw Object.assign(new Error('Cancelled'), { code: 'CANCELLED' });
+      if (provider.acquire) {
+        const queueBudget = deadlineAt - Date.now();
+        if (queueBudget <= 0) throw Object.assign(new Error('Global deadline exceeded'), { code: 'MODEL_TIMEOUT' });
+        if (Number.isFinite(queueBudget)) queueTimer = setTimeout(() => controller.abort(Object.assign(new Error('Global deadline exceeded while queued'), { code: 'MODEL_TIMEOUT' })), queueBudget);
+        release = await provider.acquire(controller.signal);
+        clearTimeout(queueTimer);
+        queueWaitMs = Date.now() - startedAt;
+      }
+      const remaining = Math.max(0, deadlineAt - Date.now());
+      timeoutMs = Math.min(configuredTimeout, remaining);
+      timeoutReason = remaining <= configuredTimeout ? 'GLOBAL_DEADLINE' : 'MODEL_TIMEOUT';
       if (timeoutMs < 250) throw Object.assign(new Error('Insufficient remaining request budget.'), { code: 'GLOBAL_DEADLINE' });
-      const completion = (options.provider || this.provider).complete({ model, messages, signal: controller.signal, maxRetries: options.maxRetries });
+      const completion = provider.complete({ model, messages, signal: controller.signal, timeoutMs, maxRetries: options.maxRetries });
       completion.catch(() => {}); // late rejection after timeout is intentionally ignored.
       const timeout = new Promise(resolve => {
         timer = setTimeout(() => { timedOut = true; controller.abort(); resolve(null); }, timeoutMs);
@@ -670,7 +701,7 @@ class AdaptiveDebateOrchestrator {
           provenance: {
             stage, round, slotId: options.slotId || null, attemptNumber: options.attemptNumber || 1,
             provider: providerName, requestedModel, actualModel: null, effectiveModel: null, providerRequestId: null,
-            retryAttempts: 0, responseStatus: timeoutReason, durationMs: Date.now() - startedAt, tokenUsage: null,
+            retryAttempts: 0, responseStatus: timeoutReason, durationMs: Date.now() - startedAt, queueWaitMs, serviceMs: Date.now() - startedAt - queueWaitMs, tokenUsage: null,
             validationStatus: 'not_validated', fallbackReason: options.fallbackReason || null, aborted: true,
             providerDiagnostics: { category: timeoutReason, httpStatus: null, retryable: true, code: timeoutReason }
           },
@@ -682,9 +713,9 @@ class AdaptiveDebateOrchestrator {
         stage, round, slotId: options.slotId || null, attemptNumber: options.attemptNumber || 1,
         provider: providerName, requestedModel, actualModel, effectiveModel: actualModel,
         providerRequestId: result.providerRequestId || null, retryAttempts: Number(result.retryAttempts) || 0,
-        responseStatus: 'received', durationMs: Date.now() - startedAt, tokenUsage: result.usage || null,
+        responseStatus: 'received', durationMs: Date.now() - startedAt, queueWaitMs, serviceMs: Date.now() - startedAt - queueWaitMs, tokenUsage: result.usage || null,
         validationStatus: 'unvalidated', fallbackReason: options.fallbackReason || null,
-        providerDiagnostics: { category: 'SUCCESS', httpStatus: null, retryable: false, code: null }
+        providerDiagnostics: { category: 'SUCCESS', httpStatus: null, retryable: false, code: null, gateway: result.gatewayDiagnostics || null }
       };
       if (!actualModel || actualModel !== requestedModel) return { kind: 'provenance_error', provenance, usage: result.usage || null };
       return { kind: 'content', content: result.content, provenance, usage: result.usage || null };
@@ -698,13 +729,17 @@ class AdaptiveDebateOrchestrator {
           stage, round, slotId: options.slotId || null, attemptNumber: options.attemptNumber || 1,
           provider: providerName, requestedModel, actualModel: null, effectiveModel: null, providerRequestId: null,
           retryAttempts: Number(error?.retryAttempts) || 0, responseStatus: error?.code || 'error',
-          durationMs: Date.now() - startedAt, tokenUsage: null, validationStatus: validationError ? 'invalid_response' : 'not_validated',
+          durationMs: Date.now() - startedAt,
+          queueWaitMs: provider.acquire && !release ? Date.now() - startedAt : queueWaitMs,
+          serviceMs: provider.acquire && !release ? 0 : Date.now() - startedAt - queueWaitMs,
+          tokenUsage: null, validationStatus: validationError ? 'invalid_response' : 'not_validated',
           fallbackReason: options.fallbackReason || null,
           providerDiagnostics: {
             category: stateError(error).toUpperCase(),
             httpStatus: Number.isInteger(error?.status) ? error.status : null,
             retryable: !!error?.transient,
-            code: safeProviderCode(error?.code) || 'PROVIDER_ERROR'
+            code: safeProviderCode(error?.code) || 'PROVIDER_ERROR',
+            gateway: error?.gatewayDiagnostics || null
           },
           ...(validationError ? { validationError } : {})
         },
@@ -712,6 +747,8 @@ class AdaptiveDebateOrchestrator {
       };
     } finally {
       clearTimeout(timer);
+      clearTimeout(queueTimer);
+      release?.();
       signal?.removeEventListener('abort', abortFromParent);
     }
   }

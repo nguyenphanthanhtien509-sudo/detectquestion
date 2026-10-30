@@ -31,6 +31,7 @@ class GatewayTlsClient : public WiFiClientSecure {
     return false;
   }
  public:
+  uint32_t connectMs = 0;
   bool dnsFailed = false;
   bool bodyTimedOut = false;
   using WiFiClientSecure::connect;
@@ -50,7 +51,10 @@ class GatewayTlsClient : public WiFiClientSecure {
     _timeout = timeout;
     IPAddress address;
     if (!resolveGatewayHost(host, address)) { dnsFailed = true; return 0; }
-    return WiFiClientSecure::connect(address, port, host, _CA_cert, _cert, _private_key);
+    const uint32_t started = millis();
+    const int result = WiFiClientSecure::connect(address, port, host, _CA_cert, _cert, _private_key);
+    connectMs = millis() - started;
+    return result;
   }
 };
 
@@ -75,6 +79,8 @@ std::atomic<int> clockSource(0); // 0 unset, 1 USB, 2 SNTP, 3 retained RTC.
 std::atomic<int> networkStage(0), lastHttpStatus(0), lastTlsCode(0);
 std::atomic<uint32_t> lastUploadMs(0), lastNetworkMs(0), lastPostMs(0), lastReadMs(0), reusedConnections(0);
 std::atomic<uint32_t> lastDnsMs(0);
+std::atomic<uint32_t> cancelRequestedAt(0), lastCancelDrainMs(0);
+uint32_t sessionIdleSince = 0;
 std::atomic<bool> lastDnsFallback(false);
 uint32_t uploadStartedAt = 0;
 std::atomic<bool> sessionInvalidated(true);
@@ -208,6 +214,7 @@ void status(const String &id) {
   doc["lastHttpStatus"] = lastHttpStatus.load();
   doc["lastTlsCode"] = lastTlsCode.load();
   doc["lastDnsMs"] = lastDnsMs.load();
+  doc["lastCancelDrainMs"] = lastCancelDrainMs.load();
   doc["lastDnsFallback"] = lastDnsFallback.load();
   doc["lastUploadMs"] = lastUploadMs.load();
   doc["lastNetworkMs"] = lastNetworkMs.load();
@@ -257,14 +264,35 @@ void networkTask(void *) {
   const uint32_t startedAt = millis();
   networkStage.store(1); lastHttpStatus.store(0); lastTlsCode.store(0);
   lastPostMs.store(0); lastReadMs.store(0);
+  lastDnsMs.store(0); lastDnsFallback.store(false);
+  const uint32_t heapBefore = ESP.getFreeHeap();
+  bool reused = false;
+  uint32_t idleMs = 0, connectMs = 0;
+  int bodyResult = 0, httpStatus = 0, tlsCode = 0;
+  const auto diagnostics = [&](JsonObject info) {
+    info["dnsMs"] = lastDnsMs.load();
+    info["dnsFallback"] = lastDnsFallback.load();
+    info["connectMs"] = connectMs;
+    info["postAndHeadersMs"] = lastPostMs.load();
+    info["bodyMs"] = lastReadMs.load();
+    info["networkMs"] = millis() - startedAt;
+    info["reusedConnection"] = reused;
+    info["idleMs"] = idleMs;
+    info["httpCode"] = httpStatus;
+    info["tlsCode"] = tlsCode;
+    info["bodyResult"] = bodyResult;
+    info["heapBefore"] = heapBefore;
+    info["freeHeap"] = ESP.getFreeHeap();
+    info["largestHeapBlock"] = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    info["wifiConnected"] = WiFi.status() == WL_CONNECTED;
+    info["cancelDrainMs"] = cancelled ? millis() - cancelRequestedAt.load() : 0;
+  };
   const String id = activeId;
   const bool license = activeOp == "license";
   const String url = license ? setting("licenseUrl") : setting("apiUrl");
   const String key = license ? setting("anonKey") : setting("apiKey");
   String ca = license ? setting("licenseCa") : setting("caCert");
   const char *error = nullptr;
-  int httpStatus = 0;
-  int tlsCode = 0;
   char tlsMessage[128] = {0};
   if (WiFi.status() != WL_CONNECTED) error = "WIFI_OFFLINE";
   else if (time(nullptr) <= 1700000000) error = "CLOCK_NOT_READY";
@@ -280,7 +308,9 @@ void networkTask(void *) {
     }
     GatewayTlsClient &tls = *cachedTls;
     HTTPClient &http = *cachedHttp;
-    const bool reused = tls.connected();
+    reused = tls.connected();
+    idleMs = reused && sessionIdleSince ? millis() - sessionIdleSince : 0;
+    tls.connectMs = 0;
     http.setConnectTimeout(10000);
     http.setTimeout(30000);
     http.useHTTP10(false);
@@ -297,6 +327,7 @@ void networkTask(void *) {
         networkStage.store(2);
         const uint32_t postStarted = millis();
         httpStatus = http.sendRequest("POST", requestBuffer, expectedBytes);
+        connectMs = tls.connectMs;
         lastPostMs.store(millis() - postStarted);
         lastHttpStatus.store(httpStatus);
         if (reused && httpStatus > 0) reusedConnections.fetch_add(1);
@@ -313,6 +344,7 @@ void networkTask(void *) {
             const uint32_t readStarted = millis();
             tls.beginBody();
             const int count = http.writeToStream(&sink);
+            bodyResult = count;
             tls.endBody();
             lastReadMs.store(millis() - readStarted);
             if (cancelled) error = "CANCELLED";
@@ -320,9 +352,10 @@ void networkTask(void *) {
             else if (sink.failed) error = "USB_WRITE_FAILED";
             else if (count < 0 || size_t(count) != sink.total) error = "RESPONSE_READ_FAILED";
             else {
-              StaticJsonDocument<256> doc;
+              StaticJsonDocument<1536> doc;
               doc["v"] = 1; doc["id"] = id; doc["type"] = "result_end";
               doc["bytes"] = sink.total; doc["chunks"] = sink.seq;
+              diagnostics(doc.createNestedObject("diagnostics"));
               if (!sendDoc(doc)) error = "USB_WRITE_FAILED";
             }
           }
@@ -336,11 +369,13 @@ void networkTask(void *) {
   // Reuse only completely consumed successful responses. Never replay a
   // failed POST automatically: the provider may already have billed it.
   if (error || cancelled) closeSession();
-  else if (cachedHttp) cachedHttp->end();
+  else if (cachedHttp) { cachedHttp->end(); sessionIdleSince = millis(); }
+  if (cancelled) lastCancelDrainMs.store(millis() - cancelRequestedAt.load());
   if (error) {
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<2048> doc;
     doc["v"] = 1; doc["id"] = id; doc["type"] = "error";
     doc["code"] = error; doc["httpStatus"] = httpStatus;
+    diagnostics(doc.createNestedObject("diagnostics"));
     if (tlsCode) { doc["tlsCode"] = tlsCode; doc["tlsMessage"] = tlsMessage; }
     sendDoc(doc);
   }
@@ -401,7 +436,10 @@ void handleFrame(const String &line) {
   }
   if (type == "cancel") {
     if (activeId == id) {
-      if (busy) cancelled.store(true);
+      if (busy) {
+        if (!cancelled.load()) cancelRequestedAt.store(millis());
+        cancelled.store(true);
+      }
       else discardUpload();
     }
     reply(id, "cancel_ack"); return;

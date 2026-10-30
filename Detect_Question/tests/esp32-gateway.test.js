@@ -5,6 +5,43 @@ const { EventEmitter } = require('node:events');
 const { Esp32SerialTransport } = require('../desktop/usb/Esp32SerialTransport');
 const { Esp32UsbProvider } = require('../orchestrator/lib/esp32-usb-provider');
 const { createServer } = require('../orchestrator/server');
+const { AdaptiveDebateOrchestrator } = require('../orchestrator/lib/orchestrator');
+
+test('ESP model timeout starts after queue admission; global deadline still bounds waiting', async () => {
+  let active = 0, maximum = 0, calls = 0;
+  const transport = { async request(op, body, { signal }) {
+    calls++; active++; maximum = Math.max(maximum, active);
+    try {
+      await new Promise((resolve, reject) => {
+        const stop = () => { clearTimeout(timer); reject(signal.reason); };
+        const timer = setTimeout(() => { signal.removeEventListener('abort', stop); resolve(); }, 300);
+        signal.addEventListener('abort', stop, { once: true });
+        if (signal.aborted) stop();
+      });
+      return { model: body.model, choices: [{ message: { content: 'OK' } }] };
+    } finally { active--; }
+  } };
+  const provider = new Esp32UsbProvider({ transport });
+  const engine = new AdaptiveDebateOrchestrator({ provider, models: ['a', 'b', 'c'] });
+  const deadlineAt = Date.now() + 3000;
+  const results = await Promise.all(['a', 'b', 'c'].map(model => engine.call(model, [], null, 'initial', 0, { timeoutMs: 500, deadlineAt })));
+  assert.ok(results.every(result => result.kind === 'content'));
+  assert.equal(maximum, 1);
+  assert.ok(results[2].provenance.queueWaitMs >= 500);
+  assert.ok(results[2].provenance.serviceMs < 500);
+  const release = await provider.acquire();
+  const before = calls;
+  const waiting = engine.call('a', [], null, 'initial', 0, { timeoutMs: 500, deadlineAt: Date.now() + 30 });
+  assert.equal((await waiting).kind, 'timeout');
+  assert.equal(calls, before);
+  const cancel = new AbortController();
+  const cancelled = engine.call('b', [], cancel.signal, 'initial', 0, { timeoutMs: 500, deadlineAt: Date.now() + 2000 });
+  cancel.abort();
+  assert.equal((await cancelled).kind, 'cancelled');
+  release();
+  const after = await engine.call('c', [], null, 'initial', 0, { timeoutMs: 500, deadlineAt: Date.now() + 2000 });
+  assert.equal(after.kind, 'content');
+});
 
 class FakePort extends EventEmitter {
   constructor(options = {}) { super(); this.options = options; this.isOpen = false; this.completed = []; this.active = null; this.cancelCount = 0; this.chunkLengths = []; this.timeSyncs = 0; }
@@ -50,6 +87,8 @@ class FakePort extends EventEmitter {
       this.active = null;
       if (this.options.hang) return;
       if (this.options.httpError) return reply('error', { code: 'HTTP_ERROR', httpStatus: 401 });
+      if (this.options.headerTimeout) return reply('error', { code: 'HTTPS_FAILED', httpStatus: -11, tlsCode: -123,
+        diagnostics: { postAndHeadersMs: 30000, reusedConnection: true, idleMs: 45000, secret: 'must-not-log', bodyMs: 'invalid' } });
       if (this.options.dnsError) return reply('error', { code: 'DNS_FAILED', httpStatus: -1 });
       const data = request.op === 'license' ? { allowed: true, sessionId: 'session-1' } : {
         model: JSON.parse(body.toString()).model, id: 'provider-id',
@@ -58,7 +97,8 @@ class FakePort extends EventEmitter {
       const result = Buffer.from(JSON.stringify(data));
       let seq = 0;
       for (let offset = 0; offset < result.length; offset += 7) reply('result_chunk', { seq: seq++, data: result.subarray(offset, offset + 7).toString('base64') });
-      reply('result_end', { bytes: result.length + (this.options.badSize ? 1 : 0), chunks: seq });
+      reply('result_end', { bytes: result.length + (this.options.badSize ? 1 : 0), chunks: seq,
+        ...(this.options.diagnostics ? { diagnostics: { dnsMs: 15, connectMs: 200, postAndHeadersMs: 800, bodyMs: 20, reusedConnection: false, secret: 'must-not-log' } } : {}) });
     }
   }
 }
@@ -68,6 +108,26 @@ function setup(options) {
   const transport = new Esp32SerialTransport({ portFactory: () => port, timeoutMs: 2000, openDelayMs: 0 });
   return { port, transport, provider: new Esp32UsbProvider({ transport }) };
 }
+
+test('gateway timing and raw HTTP/TLS errors survive into provenance without arbitrary fields', async () => {
+  for (const fail of [false, true]) {
+    const fixture = setup(fail ? { headerTimeout: true } : { diagnostics: true });
+    const engine = new AdaptiveDebateOrchestrator({ provider: fixture.provider, models: ['a', 'b', 'c'] });
+    try {
+      const result = await engine.call('a', [], null, 'initial', 0, { timeoutMs: 1000, deadlineAt: Date.now() + 2000 });
+      const diagnostics = result.provenance.providerDiagnostics.gateway;
+      assert.equal(result.kind, fail ? 'provider_error' : 'content');
+      assert.equal(diagnostics.postAndHeadersMs, fail ? 30000 : 800);
+      assert.equal(diagnostics.reusedConnection, fail);
+      assert.equal(diagnostics.secret, undefined);
+      if (fail) {
+        assert.equal(diagnostics.httpCode, -11);
+        assert.equal(diagnostics.tlsCode, -123);
+        assert.equal(diagnostics.bodyMs, undefined);
+      } else assert.equal(diagnostics.connectMs, 200);
+    } finally { await fixture.transport.close(); }
+  }
+});
 
 test('multi-chunk UTF-8 and image payload round-trip; simultaneous calls stay isolated', async () => {
   const { port, transport, provider } = setup();

@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Drawing;
-using System.Windows.Forms;
 
 // GUI-subsystem one-file launcher. Its resources are injected at build time:
 // the backend executable and its already configured .env file.
@@ -38,7 +36,6 @@ internal static class DetectQuestionLauncher
 
             var stopOnly = Array.IndexOf(args, "--stop") >= 0;
             var profileCount = stopOnly ? 1 : GetProfileCount(args);
-            if (!stopOnly && profileCount == 0) return;
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = backendPath,
@@ -69,45 +66,7 @@ internal static class DetectQuestionLauncher
             }
         }
 
-        using (var dialog = new Form())
-        using (var title = new Label())
-        using (var detail = new Label())
-        using (var count = new NumericUpDown())
-        using (var start = new Button())
-        using (var cancel = new Button())
-        {
-            dialog.Text = "Detect Question – Chrome profiles";
-            dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
-            dialog.StartPosition = FormStartPosition.CenterScreen;
-            dialog.ClientSize = new Size(390, 175);
-            dialog.MaximizeBox = false;
-            dialog.MinimizeBox = false;
-            dialog.ShowInTaskbar = false;
-
-            title.Text = "Mở bao nhiêu Chrome profile?";
-            title.Font = new Font(SystemFonts.MessageBoxFont, FontStyle.Bold);
-            title.AutoSize = true;
-            title.Location = new Point(22, 20);
-            detail.Text = "Mỗi profile có phiên đăng nhập riêng. Chọn 1–5 profile.";
-            detail.AutoSize = true;
-            detail.Location = new Point(22, 53);
-            count.Minimum = 1;
-            count.Maximum = 5;
-            count.Value = 1;
-            count.Location = new Point(22, 86);
-            count.Width = 70;
-            start.Text = "Mở Chrome";
-            start.DialogResult = DialogResult.OK;
-            start.Location = new Point(188, 122);
-            cancel.Text = "Hủy";
-            cancel.DialogResult = DialogResult.Cancel;
-            cancel.Location = new Point(286, 122);
-            dialog.AcceptButton = start;
-            dialog.CancelButton = cancel;
-            dialog.Controls.AddRange(new Control[] { title, detail, count, start, cancel });
-
-            return dialog.ShowDialog() == DialogResult.OK ? Decimal.ToInt32(count.Value) : 0;
-        }
+        return 1;
     }
 
     private static void OpenLiveLogWindow()

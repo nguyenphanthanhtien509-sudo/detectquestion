@@ -3,6 +3,19 @@
 const { EventEmitter } = require('events');
 const { randomUUID } = require('crypto');
 const error = (code, message = code) => Object.assign(new Error(message), { code });
+function gatewayDiagnostics(frame) {
+  const result = {};
+  const source = frame.diagnostics || {};
+  for (const key of ['dnsMs', 'connectMs', 'postAndHeadersMs', 'bodyMs', 'networkMs', 'idleMs', 'httpCode', 'tlsCode', 'bodyResult', 'heapBefore', 'freeHeap', 'largestHeapBlock', 'cancelDrainMs']) {
+    if (Number.isSafeInteger(source[key])) result[key] = source[key];
+  }
+  for (const key of ['dnsFallback', 'reusedConnection', 'wifiConnected']) {
+    if (typeof source[key] === 'boolean') result[key] = source[key];
+  }
+  if (Number.isInteger(frame.httpStatus)) result.httpCode = frame.httpStatus;
+  if (Number.isInteger(frame.tlsCode)) result.tlsCode = frame.tlsCode;
+  return result;
+}
 
 class Esp32SerialTransport {
   constructor(options = {}) {
@@ -90,6 +103,7 @@ class Esp32SerialTransport {
         if (frame.id !== id) return;
         if (frame.type === 'error') {
           const cause = error(frame.code || 'USB_DEVICE_ERROR');
+          cause.gatewayDiagnostics = gatewayDiagnostics(frame);
           cause.status = Number(frame.httpStatus) || undefined;
           if (frame.tlsCode) { cause.tlsCode = Number(frame.tlsCode); cause.tlsMessage = String(frame.tlsMessage || '').slice(0, 128); }
           finish(cause); return;
@@ -192,7 +206,11 @@ class Esp32SerialTransport {
           if (frame.bytes !== count || frame.chunks !== chunks.length) {
             throw error('USB_SIZE_MISMATCH', `USB_SIZE_MISMATCH: received ${count}/${frame.bytes} bytes and ${chunks.length}/${frame.chunks} chunks.`);
           }
-          try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+          try {
+            const result = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+            if (result && typeof result === 'object') Object.defineProperty(result, 'gatewayDiagnostics', { value: gatewayDiagnostics(frame), configurable: true });
+            return result;
+          }
           catch (_) { throw error('INVALID_RESPONSE'); }
         }
         return undefined;
