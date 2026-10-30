@@ -13,7 +13,6 @@ class HotKeyManager {
     if (typeof window === 'undefined') return;
     const isTypingTarget = target => target && (target.tagName === 'TEXTAREA' || target.isContentEditable || target.getAttribute?.('contenteditable') === 'true');
     const isSingleModelKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'm' || e.key === 'M' || e.code === 'KeyM');
-    const isCaptureKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'y' || e.key === 'Y' || e.code === 'KeyY') && !isTypingTarget(e.target);
     const isCaptureSingleModelKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'u' || e.key === 'U' || e.code === 'KeyU') && !isTypingTarget(e.target);
     const isCacheKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'b' || e.key === 'B' || e.code === 'KeyB');
     const stopEvent = e => {
@@ -45,9 +44,6 @@ class HotKeyManager {
         }
         return;
       }
-      const isAltK = e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'k' || e.key === 'K' || e.code === 'KeyK');
-      if (isAltK) { stopEvent(e); this.onContinuousSolve(); return; }
-      if (isCaptureKey(e)) { stopEvent(e); this.onCaptureSolve(); return; }
       if (isCaptureSingleModelKey(e)) { stopEvent(e); this.onCaptureSingleModelSolve(); }
     };
 
@@ -56,7 +52,7 @@ class HotKeyManager {
     // the keydown handler has started the request; typing in text fields is
     // intentionally left untouched.
     const suppressSolveKeyFollowups = e => {
-      if (isSingleModelKey(e) || isCaptureKey(e) || isCaptureSingleModelKey(e) || isCacheKey(e)) stopEvent(e);
+      if (isSingleModelKey(e) || isCaptureSingleModelKey(e) || isCacheKey(e)) stopEvent(e);
     };
     window.addEventListener('keydown', handleKeyDown, { capture: true, passive: false });
     window.addEventListener('keypress', suppressSolveKeyFollowups, { capture: true, passive: false });

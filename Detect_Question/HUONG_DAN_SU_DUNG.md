@@ -1,140 +1,118 @@
-# Hướng dẫn sử dụng Detect Question
+# Hướng dẫn sử dụng Detect Question USB 0.3.0
+
+Áp dụng cho ứng dụng và firmware **0.3.0**, cập nhật ngày 30/10/2026.
 
 ## 1. Mở ứng dụng
 
-1. Double-click `release\\DetectQuestion.exe`.
-2. Chọn số Chrome profile muốn mở (1–5). Mỗi cửa sổ có phiên đăng nhập riêng, phù hợp khi cần dùng nhiều tài khoản LMS.
-3. Chờ Chrome tự mở ở trang **New Tab**. Backend chạy nền tại `127.0.0.1:8787`.
-4. Dùng chính cửa sổ Chrome do ứng dụng mở để đăng nhập và mở trang bài thi/câu hỏi.
+1. Bật hotspot Wi-Fi 2,4 GHz đã cấu hình cho ESP32.
+2. Cắm ESP32-S3 vào laptop bằng cáp USB có truyền dữ liệu; đóng Serial Monitor để giải phóng COM.
+3. Mở `Detect_Question/release/usb-preview/DetectQuestion.exe` tính từ thư mục dự án `auto`.
+4. Ứng dụng tự mở **một Chrome profile**, không hỏi số lượng và không yêu cầu nhập MSV.
+5. Dùng cửa sổ trình duyệt do ứng dụng mở để vào trang câu hỏi.
 
-Máy dùng bản portable không cần cài Node.js hoặc chạy `npm install`. Ứng dụng cần có Google Chrome hoặc Microsoft Edge trên máy.
+`usb-preview` là bản mặc định; `portable` cũ không phải bản đang cập nhật. Khi thay EXE, đóng phiên cũ rồi mở lại. Máy dùng EXE không cần cài Node.js hoặc chạy `npm install`, nhưng cần Google Chrome hoặc Microsoft Edge.
 
-Khi chạy lại, ứng dụng sẽ thay tiến trình backend cũ đang chiếm cổng `8787`, rồi khởi động tiến trình mới.
-
-> Không đóng Chrome do Detect Question mở nếu vẫn đang giải câu hỏi. Đóng Chrome sẽ dừng phần detector của phiên đó.
+Backend chạy nền tại `127.0.0.1:8787`. Khi chạy lại, launcher thay backend cũ đang dùng cổng này. Giữ ESP được cắm và hotspot hoạt động trong lúc giải.
 
 ## 2. Phím tắt
 
-| Phím tắt | Chức năng | Hành vi DOM / Auto-Apply |
+| Phím | Chức năng | Hành vi |
 | --- | --- | --- |
-| `Alt + N` | Quét câu hỏi hiện tại và giải đầy đủ (multi-model debate + backward check). | **Tự động chọn đáp án** (Auto-Apply) khi đạt đồng thuận 3/3 (`eligibleForAutoApply: true`), hiển thị badge compact và lưu cache. |
-| `Alt + M` | Quét câu hỏi hiện tại và giải nhanh bằng một model (Emergency). | **Display/copy-only**: Hiển thị badge, copy clipboard, lưu cache; không tự chọn DOM. |
-| `Alt + Y` | Kéo chuột chọn một vùng màn hình, chụp và giải đầy đủ. | Hiển thị badge kết quả, copy clipboard; tự chọn nếu card câu hỏi được nhận diện chính xác. |
-| `Alt + U` | Kéo chuột chọn một vùng màn hình, chụp và giải nhanh bằng một model. | Hiển thị badge kết quả, copy clipboard; không tự chọn DOM. |
-| `Alt + K` | Giải nhanh liên tục toàn bộ câu chưa trả lời trên trang hiện tại. | Tự chọn đáp án với trạng thái unverified khi map đầy đủ vào form control. |
-| `Alt + B` | **Xem lại đáp án đã lưu trong Cache** theo dấu vân tay câu hỏi. | **Không gọi AI, không thao tác DOM**: Hiển thị badge 5 giây và copy đáp án rút gọn. |
-| `Esc` | Dừng tác vụ giải liên tục/đang chờ. | Hủy yêu cầu in-flight, ngăn không áp đáp án vào câu hỏi. |
+| `Alt + M` | Quét câu hiện tại, giải bằng một model. | Hiển thị/copy và lưu cache; không tự điền. |
+| `Alt + U` | Kéo chọn vùng ảnh, giải bằng một model. | Hiển thị/copy; không tự điền. |
+| `Alt + B` | Xem đáp án đã lưu của câu hiện tại. | Hiển thị 5 giây và copy; không gọi AI hoặc thay đổi ô trả lời. |
+| `Esc` | Đóng vùng chọn ảnh hoặc dừng luồng giải trên giao diện. | Với API đang chạy, chủ yếu vô hiệu hóa kết quả; chưa bảo đảm hủy yêu cầu bên dưới. |
 
-Khi dùng `Alt + Y` hoặc `Alt + U`, kéo khung bao trọn phần đề, bảng, hình và đáp án cần đọc, sau đó thả chuột.
 
-## 3. Kết quả hiển thị và Tự động chọn đáp án (Auto-Apply)
+Click vào nội dung trang trước khi dùng phím tắt. Với `Alt + U`, tránh đặt con trỏ trong textarea/vùng soạn thảo; kéo khung bao đủ đề, hình, bảng và lựa chọn rồi thả. `Esc` khi chọn vùng sẽ đóng khung chọn.
 
-- **Tự động chọn đáp án**: Khi AI giải bằng `Alt + N` đạt đồng thuận (`AI_VERIFIED`), hệ thống tự động:
-  - Trắc nghiệm 1 lựa chọn: click radio hoặc custom option card (`div.cursor-pointer`).
-  - Trắc nghiệm nhiều lựa chọn: bỏ chọn các checkbox cũ không thuộc kết quả, click chọn chính xác các checkbox A, C, D...
-  - Short answer: điền text/số chuẩn xác vào ô input hoặc textarea (không ghi vào ô readonly/combobox).
-  - Dropdown / Matching: chọn đúng option tương ứng trên native `<select>` hoặc Ant Design / React Select.
-- **Badge nhỏ gọn (Stealth Badge)**: Đáp án hiển thị ở góc dưới trang, tự ẩn sau thời gian quy định (hoặc 5 giây với `Alt + B`).
-- **Clipboard**: Đáp án compact luôn được tự động copy vào clipboard để người dùng có thể dán thủ công bằng `Ctrl + V` khi cần.
-- **Không tự động submit**: Hệ thống tuyệt đối không bấm nút "Nộp bài", "Finish attempt" hoặc tự ý chuyển trang gây mất bài thi.
+Alt+N, Alt+K và Alt+Y đã được gỡ bỏ.
 
-### Quy ước đáp án rút gọn (Compact Answer)
+## 3. Kết quả
 
-- Trắc nghiệm một lựa chọn: Hiện chữ cái đáp án chuẩn (ví dụ `C`).
-- Trắc nghiệm nhiều lựa chọn: A, C, D được rút gọn thành số thứ tự lựa chọn nối liền: `134`.
-- Câu ghép nối / nhiều dropdown: Giá trị được chuyển đổi theo số thứ tự option từ trên xuống dưới theo thứ tự các trường trên giao diện. Ví dụ CX = `FE67` (option dòng 5), BX = `67FE` (option dòng 4) sẽ hiện là `54`.
-- Short answer: Giữ nguyên định dạng chuỗi do AI trả về (ví dụ `0xE9`).
-- Nếu detector không xác nhận được danh sách option thực tế, hệ thống giữ nguyên text trả về thay vì đoán bừa số thứ tự.
+- `SINGLE_MODEL_UNVERIFIED`: kết quả từ một model, chưa kiểm chứng. `Alt + M/U` chỉ hiển thị/copy, không tự điền đáp án.
+- `AI_VERIFIED`: backend chấp nhận sau luồng đối chiếu/kiểm tra AI; không bảo đảm đáp án đúng tuyệt đối.
+- `CONSENSUS_UNVERIFIED`: có đồng thuận nhưng chưa hoàn tất kiểm chứng; chỉ dùng tham khảo, không tự nâng thành đã kiểm chứng.
+- Luồng nhiều model vẫn tồn tại trong backend nhưng không còn được gọi bằng Alt+N/Y. Các phím giải hiện tại là Alt+M/U, chỉ hiển thị/copy.
+- Không tự nộp bài và không tự chuyển trang sau khi giải.
 
-## 4. Dạng nội dung detector có thể gửi lên model
+Badge đáp án xuất hiện ở góc dưới trang. Nếu clipboard bị trang hoặc trình duyệt từ chối, đọc badge và sao chép thủ công.
 
-Detector ưu tiên vùng câu hỏi đang nhìn thấy và hỗ trợ:
+Quy ước rút gọn: một lựa chọn hiện chữ cái; nhiều lựa chọn A/C/D có thể hiện `134`; nhiều dropdown hiện chỉ số option theo thứ tự trường; ô trả lời ngắn giữ chuỗi như `0xE9`. Nếu không xác nhận được danh sách lựa chọn, giữ nội dung trả về thay vì đoán chỉ số.
 
-- Chọn một đáp án: radio, label, hoặc giao diện đáp án dạng `div` tùy biến.
-- Chọn nhiều đáp án: checkbox.
-- Dropdown/select, kể cả câu có nhiều select.
-- Ant Design/React Select (kể cả dropdown đóng và option đang virtualized) khi trang còn cung cấp danh sách lựa chọn qua React.
-- Ô điền ngắn: text, number, textarea và câu có nhiều ô nhập.
-- Hình trong câu hỏi hoặc đáp án: ảnh được gửi dưới dạng dữ liệu ảnh, không dùng URL `localhost`.
-- Bảng HTML trong phần đề/đáp án: giữ nội dung theo hàng/cột để model suy luận số liệu.
-- Moodle và các trang quiz React/Vue có cấu trúc card phổ biến.
+## 4. Ảnh, sơ đồ và bảng
 
-Với giao diện lạ hoặc câu có sơ đồ/bảng phức tạp, dùng `Alt + Y`/`Alt + U` và khoanh đúng vùng câu hỏi thường cho kết quả tốt hơn quét DOM.
+Detector hỗ trợ các cấu trúc phổ biến: một/nhiều lựa chọn, ô trả lời ngắn, nhiều ô nhập, dropdown, bảng HTML và một số giao diện Moodle/React.
 
-## 5. Xem log trực tiếp
+- Chọn đúng một câu, đủ rõ chữ và đủ phần đáp án. Ảnh chụp được cắt/nén trước khi gửi.
+- Dữ liệu ảnh đi qua USB → ESP → API; API không phải truy cập URL ảnh trên laptop.
+- SVG dạng data URL được chuyển thành PNG trong trình duyệt.
+- Nếu ảnh đã chọn không đọc được hoặc không được hỗ trợ, client dừng thay vì âm thầm gửi câu thiếu hình.
+- Không bảo đảm bộ quét lấy đủ mọi hình trên trang phức tạp. Dùng `Alt + U` để chụp trọn câu có nhiều ảnh hoặc cấu trúc lạ.
 
-Mở PowerShell tại thư mục `release` và chạy:
+Nhiều model thường mất thời gian hơn một model vì ESP xử lý các yêu cầu HTTPS lần lượt. Nội dung ảnh, tốc độ mạng và API đều ảnh hưởng thời gian trả kết quả.
+
+## 5. Wi-Fi và COM
+
+ESP kết nối hotspot và dùng mạng điện thoại gọi API. Hostname Wi-Fi hiện tại là **USB**; điện thoại có thể lưu tên cũ hoặc hiển thị theo cách riêng. Hostname này không đổi tên USB Serial/JTAG trong Device Manager.
+
+Ứng dụng tự tìm COM khi chỉ có một thiết bị Espressif phù hợp. COM7 đổi thành COM12 trên laptop khác vẫn có thể tự nhận. Nếu có nhiều thiết bị phù hợp hoặc đã đặt `ESP32_SERIAL_PORT`, cần chỉ định đúng cổng. Muốn tự nhận, không ép `ESP32_SERIAL_PORT=COM7` trong cấu hình riêng.
+
+SSID, mật khẩu và cấu hình API nằm trong NVS của từng ESP. Sửa `gateway-config.json` hoặc nạp firmware thông thường không tự gửi nội dung file này xuống board.
+
+Sau khi sửa và lưu cấu hình, chạy từ thư mục `auto/Detect_Question`:
+
+```powershell
+node tools/esp32_gateway.js configure COM7 ../gateway-config.json
+node tools/esp32_gateway.js status COM7
+```
+
+Thay `COM7` bằng cổng thực tế. Công cụ mã nguồn cần Node.js và phụ thuộc dự án. Nếu có backend EXE trong bộ build, có thể dùng:
+
+```powershell
+.\release\usb-preview\DetectQuestionBackend.exe --gateway configure COM7 ..\gateway-config.json
+.\release\usb-preview\DetectQuestionBackend.exe --gateway status COM7
+```
+
+Kết quả cần kiểm tra: `wifiConnected: true`, `clockReady: true`, `firmware: "0.3.0"`. Không xóa flash/NVS nếu muốn giữ cấu hình. Không đưa file cấu hình thật chứa mật khẩu/khóa API lên GitHub.
+
+## 6. Xem log và phiên bản
+
+Mở PowerShell tại thư mục chứa EXE:
 
 ```powershell
 .\DetectQuestion.exe --logs
 ```
 
-Log được cập nhật liên tục, gồm các mốc như:
+File log: `%LOCALAPPDATA%\DetectQuestionBackend\standalone.log`.
 
-- `page.hotkey`: đã nhận phím tắt.
-- `page.scanner.result`: số câu detector tìm được.
-- `solve.started`: đã gửi yêu cầu giải.
-- `pipeline`: từng bước model/debate/verification.
-- `solve.completed`: backend trả kết quả.
-- `page.extension.answer`: đáp án đã trả về extension.
-- `page.error`, `hotkey.failed` hoặc `solve.failed`: lỗi cần kiểm tra.
-
-File log nằm tại:
-
-```text
-%LOCALAPPDATA%\DetectQuestionBackend\standalone.log
-```
-
-## 6. Xử lý nhanh khi gặp lỗi
-
-| Hiện tượng | Cách xử lý |
+| Trường hoặc sự kiện | Ý nghĩa |
 | --- | --- |
-| Bấm phím tắt không có phản hồi | Click vào nội dung trang thi rồi bấm lại; sau đó xem `page.hotkey` trong log. |
-| Có `page.hotkey` nhưng `page.scanner.result` là `count:0` | Trang hiện tại chưa có card câu hỏi trong DOM hoặc tab đang dùng script cũ. Nhấn `Ctrl+R`, cuộn để câu hỏi được render, rồi thử lại; với UI lạ dùng `Alt + U`/`Alt + Y` khoanh đúng vùng. |
-| `No supported question detected` | Cuộn để card câu hỏi nằm trong vùng nhìn thấy; nếu trang có UI lạ, dùng `Alt + U` hoặc `Alt + Y` để chọn vùng câu hỏi. |
-| `Invalid arguments: should be exactly one string` | Đóng phiên Detect Question cũ, chạy lại `DetectQuestion.exe` bản mới và nhấn `Ctrl+R` ở tab đề. Lỗi bridge này đã được sửa trong bản portable mới. |
-| Có log `MODEL_TIMEOUT` | Thử lại một lần. Bản hiện tại đã tăng timeout tổng và timeout backward để hạn chế kết quả về muộn. |
-| Không có đáp án | Kiểm tra log từ `solve.started` đến `solve.completed`; lỗi provider/network sẽ hiện ở đó. |
-| Trang LMS không vào được | Kiểm tra mạng/DNS của máy; Chrome do ứng dụng mở đã dùng DNS-over-HTTPS riêng để tăng khả năng phân giải tên miền. |
-| `chrome://extensions` trắng/đơ | Đóng Chrome do app mở, chạy lại `DetectQuestion.exe`. Bản hiện tại không inject detector vào trang nội bộ Chrome. |
-| Chrome hỏi `Restore pages?` | Bấm dấu `×` để đóng; cảnh báo này thường xuất hiện sau lúc app được cập nhật/restart cưỡng bức. |
+| `appVersion: "0.3.0"` | Phiên bản ứng dụng ghi log. |
+| `gateway.version`, `firmwareVersion` | Phiên bản ESP thực sự trả về khi bắt tay; ghi lần đầu hoặc khi phiên bản thay đổi. |
+| `page.hotkey`, `page.scanner.result` | Nhận phím và kết quả quét. |
+| `solve.started`, `pipeline`, `request.completed`, `solve.completed` | Tiến trình và kết quả yêu cầu. |
+| `queueWaitMs`, `serviceMs` | Thời gian xếp hàng và xử lý phía PC. |
+| `providerDiagnostics.gateway` | Mã HTTP/TLS, thời gian DNS/kết nối/POST/body, kết nối tái sử dụng và bộ nhớ do firmware cung cấp. |
 
-## 7. Lưu ý sử dụng
+Các khoảng đo có thể bao hàm nhau; không cộng tất cả để tính tổng. Xem [NETWORK_DIAGNOSTICS.md](../NETWORK_DIAGNOSTICS.md) và [IMAGE_AUDIT_REPORT.md](IMAGE_AUDIT_REPORT.md).
 
-- Detector chỉ chạy trên trang web bình thường (`http`, `https`, `file`, `data`), không chạy trên các trang nội bộ `chrome://...`.
-- Kiểm tra lại đáp án trước khi nộp bài, đặc biệt với câu có hình, bảng dài hoặc dữ kiện thiếu.
-- Không cần sửa `.env` để sử dụng bản portable đã cấu hình sẵn. Không chia sẻ file `.env` hay log có thông tin nhạy cảm.
+## 7. Xử lý lỗi
 
-## 8. Auto-apply và cache
+| Hiện tượng | Cách kiểm tra |
+| --- | --- |
+| Alt+N không phản hồi | Phím đã được gỡ; dùng Alt+M hoặc Alt+U. |
+| Phím khác không phản hồi | Click nội dung trang; kiểm tra ô đang nhập/vùng chọn, xem `page.hotkey`. |
+| Không tìm được câu | Cuộn để câu được render; dùng chọn vùng ảnh nếu cấu trúc trang chưa hỗ trợ. |
+| Không mở được COM | Đóng Serial Monitor/ứng dụng chiếm COM; kiểm tra cáp và nhận diện thiết bị Windows. |
+| `WIFI_OFFLINE` | Kiểm tra hotspot và cấu hình đã gửi xuống đúng ESP. |
+| `HTTPS_FAILED`, `MODEL_TIMEOUT` | Đọc mã HTTPClient/TLS và thời gian trong log; không kết luận là lỗi ảnh, tránh gửi liên tục khi mạng đang lỗi. |
+| `INVALID_RESPONSE` | Phản hồi sai định dạng; luồng một model có tối đa một lượt sửa JSON nếu còn thời gian. |
+| Không đọc được ảnh | Chọn lại vùng rõ và đầy đủ, chờ ảnh tải xong. Client không gửi tiếp nếu từ chối ảnh. |
+| Mở nhầm bản cũ | Dùng EXE trong `release/usb-preview`, mở lại và kiểm tra phiên bản trong log mới. |
 
-- `Alt + N`, `Alt + Y` và `Alt + K` chỉ tự áp dụng khi backend trả kết quả có `eligibleForAutoApply = true`. Kết quả một model (`Alt + M`, `Alt + U`) hoặc `CONSENSUS_UNVERIFIED` chỉ hiển thị/copy, không thay đổi đáp án trên trang.
-- Ứng dụng kiểm tra lại fingerprint, question block và DOM trước khi bấm/nhập. Nếu người dùng đã chuyển câu hoặc giao diện đổi, thao tác sẽ fail-closed.
-- `Alt + B` chỉ đọc cache theo website + fingerprint, hiển thị badge trong 5 giây và copy đáp án ngắn. Phím này không gọi Gemini API và không tự chọn đáp án.
-- `Alt + K` là lệnh auto-apply do người dùng chủ động bật: nó vẫn giữ trạng thái `SINGLE_MODEL_UNVERIFIED`, không gắn sai thành `AI_VERIFIED`; đáp án không map đủ hoặc DOM đã thay đổi sẽ bị bỏ qua.
-- Bản portable lưu cache tại `%LOCALAPPDATA%\DetectQuestionBackend\answer-cache.json`; extension lưu bằng `chrome.storage.local`.
-- Không có bước nào tự submit hoặc chuyển trang sau khi áp dụng đáp án.
+## 8. Cache và giới hạn
 
+Bản EXE lưu cache tại `%LOCALAPPDATA%\DetectQuestionBackend\answer-cache.json`; extension lưu trong `chrome.storage.local`. `Alt + B` chỉ có kết quả khi đã lưu đúng câu theo website và dấu vân tay nội dung.
 
-## B?n USB: s?a qu?t ?? v? ph?m ch?p (29/10/2026)
-
-M? `release/usb-preview/DetectQuestion.exe` trong th? m?c d? ?n ? Downloads.
-
-- `Alt + M`: gi?i nhanh m?t c?u, hi?n/copy k?t qu?; kh?ng t? ch?n.
-- `Alt + N`: gi?i v? ki?m tra nhi?u model; ch? ch?n khi k?t qu? ?? ?i?u ki?n. C? th? m?t l?u h?n m?t model.
-- `Alt + K`: gi?i nhanh li?n t?c v? ch?n ??p ?n. `Esc` d?ng.
-- `Alt + U`: ch?p v?ng ?? gi?i nhanh. Nh?n ph?m, r?i gi? chu?t tr?i k?o bao tr?n ?? v? c?c l?a ch?n, th? chu?t ?? g?i.
-- `Alt + Y`: ch?n v?ng t??ng t?, d?ng lu?ng ki?m tra nhi?u model.
-- `Esc`: h?y v?ng ch?p ?ang m?.
-- `Alt + B`: xem k?t qu? ?? l?u cho ??ng c?u; ch?a gi?i c?u ?? th? ch?a c? cache.
-
-?? s?a l?i ch? l?y nh?n ?C?u 1:? m? thi?u ??, l?i l?p to?n t? MathJax, khung v?ng ch?n kh?ng hi?n th? v? Esc kh?ng ??ng v?ng ch?n. ?? ki?m tra qu?t ?? 30 c?u tr?n trang luy?n t?p th?c t?; tr?n c?u m?u 2 + 2, Alt+M tr? B, Alt+N ??t AI_VERIFIED v? Alt+K ch?n B. Alt+U/Y ?? ki?m tra m?/h?y v?ng ch?n v? c?u n?i ch?p m?n h?nh. C?c k?t qu? n?y kh?ng b?o ??m m?i ??p ?n AI lu?n ??ng.
-
-
-## Khởi động bản USB không cần MSV
-
-Bản Detect USB hiện không yêu cầu nhập MSV, không gọi máy chủ cấp phép khi khởi động. Mở `release/usb-preview/DetectQuestion.exe`, chọn số Chrome profile rồi dùng các phím tắt bình thường. ESP32 vẫn cần được cắm, có cấu hình Wi-Fi và API hợp lệ. Không cần nạp lại firmware cho thay đổi này.
-
-
-## Cập nhật phím tắt
-
-Alt+N đã được gỡ bỏ. Dùng Alt+M cho một model, Alt+K để giải liên tục, Alt+U/Y để chọn vùng ảnh, Alt+B để xem đáp án lưu và Esc để dừng.
+Kiểm tra lại đáp án, đặc biệt với ảnh mờ, bảng dài hoặc dữ kiện thiếu. Kiểm thử đã qua không chứng minh mọi trang/câu hỏi và mọi thời điểm mạng đều hoạt động đúng. Dùng log mới và `status` của ESP để xác định phiên bản hiện tại, không dựa vào báo cáo lịch sử.
