@@ -7,20 +7,29 @@
 #define GATEWAY_LED_PIN 48
 #endif
 #ifndef GATEWAY_LED_RGB
-#define GATEWAY_LED_RGB 1
+#define GATEWAY_LED_RGB 0
 #endif
 #ifndef GATEWAY_LED_ACTIVE_LOW
 #define GATEWAY_LED_ACTIVE_LOW 0
 #endif
+#ifndef GATEWAY_LED_BRIGHTNESS_PERCENT
+#define GATEWAY_LED_BRIGHTNESS_PERCENT 10
+#endif
+static_assert(GATEWAY_LED_BRIGHTNESS_PERCENT >= 0 && GATEWAY_LED_BRIGHTNESS_PERCENT <= 100,
+              "LED brightness must be between 0 and 100 percent");
 
-// Poll from loop(), without delay(): disconnected = blinking amber,
-// connected to the Wi-Fi access point = solid green. This does not claim
+// Poll from loop(), without delay(): disconnected = blinking,
+// connected to the Wi-Fi access point = solid on. Optional RGB mode uses
+// amber/green respectively. This does not claim
 // that Internet, TLS or the provider API is ready.
 class WifiStatusLed {
  public:
   void begin(uint32_t now) {
 #if !GATEWAY_LED_RGB
     pinMode(GATEWAY_LED_PIN, OUTPUT);
+    digitalWrite(GATEWAY_LED_PIN, GATEWAY_LED_ACTIVE_LOW ? HIGH : LOW);
+    ledcSetup(0, 1000, 8);
+    ledcAttachPin(GATEWAY_LED_PIN, 0);
 #endif
     changedAt = now;
     connected = false;
@@ -52,8 +61,8 @@ class WifiStatusLed {
     neopixelWrite(GATEWAY_LED_PIN, on && !connected ? 16 : 0,
                   on ? (connected ? 16 : 6) : 0, 0);
 #else
-    digitalWrite(GATEWAY_LED_PIN, on ? (GATEWAY_LED_ACTIVE_LOW ? LOW : HIGH)
-                                    : (GATEWAY_LED_ACTIVE_LOW ? HIGH : LOW));
+    const uint32_t duty = on ? (255 * GATEWAY_LED_BRIGHTNESS_PERCENT + 50) / 100 : 0;
+    ledcWrite(0, GATEWAY_LED_ACTIVE_LOW ? 255 - duty : duty);
 #endif
   }
 };
