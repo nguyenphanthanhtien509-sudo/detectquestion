@@ -299,6 +299,9 @@ void networkTask(void *) {
   else if (!validHttps(url) || !safeHeader(key) || ca.length() < 100) error = "NOT_CONFIGURED";
   else {
     if (sessionInvalidated.exchange(false) || cachedUrl != url || cachedKey != key || cachedCa != ca) closeSession();
+    // A socket can look connected after the server/mobile NAT has expired it.
+    // Reconnect before a new POST after an idle gap; never replay a sent POST.
+    if (cachedTls && sessionIdleSince && millis() - sessionIdleSince >= 15000) closeSession();
     if (!cachedTls) {
       cachedUrl = url; cachedKey = key; cachedCa = ca;
       cachedTls.reset(new GatewayTlsClient());

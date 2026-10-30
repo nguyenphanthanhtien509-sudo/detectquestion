@@ -100,14 +100,13 @@
       if (!source) return result;
       const image = await this.toInlineImage(source);
       delete result.imageUrl;
-      // Decorative icons, malformed data URLs, and inaccessible image URLs
-      // must never prevent a text/DOM question from being solved. A valid
-      // image is attached when available; otherwise continue without it.
-      if (image) result.image = image;
+      if (!image) throw new Error('Không đọc được ảnh câu hỏi; đã dừng để tránh giải thiếu hình.');
+      result.image = image;
       return result;
     }
 
     async toInlineImage(source) {
+      if (/^data:image\/svg\+xml[;,]/i.test(String(source || '').trim())) return this.rasterizeSvg(source);
       const dataUrl = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/i.exec(String(source || '').trim());
       if (dataUrl) return { mimeType: dataUrl[1].toLowerCase(), data: dataUrl[2] };
       if (!/^https?:\/\//i.test(String(source || ''))) return null;
@@ -132,6 +131,32 @@
       let binary = '';
       for (let offset = 0; offset < bytes.length; offset += 0x8000) binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
       return { mimeType, data: btoa(binary) };
+    }
+
+    async rasterizeSvg(source) {
+      if (!scope.document?.createElement || !scope.Image) throw new Error('SVG cần được chuyển thành ảnh trong trình duyệt.');
+      if (source.length > 2_000_000) throw new Error('Ảnh SVG quá lớn.');
+      return new Promise((resolve, reject) => {
+        const image = new scope.Image();
+        const timer = setTimeout(() => { image.onload = image.onerror = null; reject(new Error('Hết thời gian đọc SVG.')); }, 5000);
+        image.onerror = () => { clearTimeout(timer); reject(new Error('Không đọc được ảnh SVG.')); };
+        image.onload = () => {
+          clearTimeout(timer);
+          try {
+            const width = image.naturalWidth || 1024, height = image.naturalHeight || 768;
+            const scale = Math.min(1, 1800 / Math.max(width, height));
+            const canvas = scope.document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(width * scale)); canvas.height = Math.max(1, Math.round(height * scale));
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#fff'; context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            const data = canvas.toDataURL('image/png').split(',')[1];
+            if (!data || data.length > 1_333_332) throw new Error('Ảnh SVG sau chuyển đổi quá lớn.');
+            resolve({ mimeType: 'image/png', data });
+          } catch (error) { reject(error); }
+        };
+        image.src = source;
+      });
     }
 
     toLegacyResult(result) {

@@ -15,6 +15,7 @@ test('real browser crop preserves color/aspect ratio within USB image budget', a
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-compression-'));
   try {
     const source = pathToFileURL(path.resolve(__dirname, '../src/content/ui/CaptureSelectionOverlay.js')).href;
+    const clientSource = pathToFileURL(path.resolve(__dirname, '../src/content/solver/AdaptiveDebateApiClient.js')).href;
     const page = path.join(directory, 'check.html');
     fs.writeFileSync(page, `<!doctype html><meta charset="utf-8"><pre id="result">pending</pre><script src="${source}"></script><script>
     (async () => {
@@ -27,7 +28,14 @@ test('real browser crop preserves color/aspect ratio within USB image budget', a
       const image = new Image(); image.src = encoded; await image.decode();
       const sample = document.createElement('canvas'); sample.width = image.naturalWidth; sample.height = image.naturalHeight;
       const draw = sample.getContext('2d'); draw.drawImage(image, 0, 0);
-      document.getElementById('result').textContent = JSON.stringify({ mime: encoded.slice(0, 23), bytes: atob(encoded.split(',')[1]).length, width: image.naturalWidth, height: image.naturalHeight, color: [...draw.getImageData(10, 10, 1, 1).data] });
+      await new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = '${clientSource}'; script.onload = resolve; script.onerror = reject; document.head.appendChild(script); });
+      const client = new AdaptiveDebateApiClient();
+      const svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="red"/></svg>');
+      const converted = await client.toTransportQuestion({ type: 'image', title: 'diagram', image: svg });
+      const svgImage = new Image(); svgImage.src = 'data:image/png;base64,' + converted.image.data; await svgImage.decode();
+      const svgCanvas = document.createElement('canvas'); svgCanvas.width=400; svgCanvas.height=200; const svgCtx=svgCanvas.getContext('2d'); svgCtx.drawImage(svgImage,0,0);
+      let invalidRejected = false; try { await client.toTransportQuestion({type:'image',title:'broken',image:'data:image/png;base64,INVALID!'}); } catch (_) { invalidRejected=true; }
+      document.getElementById('result').textContent = JSON.stringify({ svgMime: converted.image.mimeType, svgColor: [...svgCtx.getImageData(10,10,1,1).data], invalidRejected, mime: encoded.slice(0, 23), bytes: atob(encoded.split(',')[1]).length, width: image.naturalWidth, height: image.naturalHeight, color: [...draw.getImageData(10, 10, 1, 1).data] });
     })().catch(error => document.getElementById('result').textContent = JSON.stringify({error: error.message}));
     </script>`, 'utf8');
     const { stdout } = await promisify(execFile)(executable, ['--headless', '--disable-gpu', '--no-first-run', '--disable-background-networking', '--user-data-dir=' + path.join(directory, 'profile'), '--virtual-time-budget=8000', '--dump-dom', pathToFileURL(page).href], { windowsHide: true, timeout: 25000, maxBuffer: 1024 * 1024 });
@@ -35,6 +43,9 @@ test('real browser crop preserves color/aspect ratio within USB image budget', a
     assert.ok(match, 'Browser did not report a canvas result');
     const result = JSON.parse(match[1]);
     assert.equal(result.error, undefined);
+    assert.equal(result.svgMime, 'image/png');
+    assert.ok(result.svgColor[0] > 240 && result.svgColor[1] < 10);
+    assert.equal(result.invalidRejected, true);
     assert.match(result.mime, /^data:image\/jpeg;base64,/);
     assert.ok(result.bytes <= 512 * 1024);
     assert.ok(result.width <= 1800 && result.width >= 1024);

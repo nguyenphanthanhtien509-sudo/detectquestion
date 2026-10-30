@@ -133,3 +133,8 @@ M? `release/usb-preview/DetectQuestion.exe` trong th? m?c d? ?n ? Downloads.
 ## Khởi động bản USB không cần MSV
 
 Bản Detect USB hiện không yêu cầu nhập MSV, không gọi máy chủ cấp phép khi khởi động. Mở `release/usb-preview/DetectQuestion.exe`, chọn số Chrome profile rồi dùng các phím tắt bình thường. ESP32 vẫn cần được cắm, có cấu hình Wi-Fi và API hợp lệ. Không cần nạp lại firmware cho thay đổi này.
+
+
+## Cập nhật phím tắt
+
+Alt+N đã được gỡ bỏ. Dùng Alt+M cho một model, Alt+K để giải liên tục, Alt+U/Y để chọn vùng ảnh, Alt+B để xem đáp án lưu và Esc để dừng.

@@ -12,10 +12,6 @@ class HotKeyManager {
   register() {
     if (typeof window === 'undefined') return;
     const isTypingTarget = target => target && (target.tagName === 'TEXTAREA' || target.isContentEditable || target.getAttribute?.('contenteditable') === 'true');
-    // Alt+N is a dedicated solver shortcut even when an Answer <input> is
-    // focused. The handler prevents the key from being typed, then the answer
-    // is copied for the user to paste with Ctrl+V.
-    const isSolveKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'n' || e.key === 'N' || e.code === 'KeyN');
     const isSingleModelKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'm' || e.key === 'M' || e.code === 'KeyM');
     const isCaptureKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'y' || e.key === 'Y' || e.code === 'KeyY') && !isTypingTarget(e.target);
     const isCaptureSingleModelKey = e => e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'u' || e.key === 'U' || e.code === 'KeyU') && !isTypingTarget(e.target);
@@ -31,19 +27,6 @@ class HotKeyManager {
       if (isEsc && document.getElementById('qa-capture-selection-overlay')) return;
       if (isEsc) { stopEvent(e); this.onStop(); return; }
       if (e.repeat) return;
-      const isTyping = isTypingTarget(e.target);
-      const isKeyN = isSolveKey(e);
-      if (isKeyN) {
-        stopEvent(e);
-        // A focused embedded frame has no quiz DOM. Relay the physical hotkey
-        // to the top content-script instance, which owns the full page scan.
-        if (window.top !== window && globalThis.chrome?.runtime?.sendMessage) {
-          chrome.runtime.sendMessage({ action: globalThis.MessageActions?.REQUEST_TOP_FRAME_SINGLE_SOLVE || 'REQUEST_TOP_FRAME_SINGLE_SOLVE' });
-        } else {
-          this.onSingleSolve();
-        }
-        return;
-      }
       if (isSingleModelKey(e)) {
         stopEvent(e);
         if (window.top !== window && globalThis.chrome?.runtime?.sendMessage) {
@@ -73,7 +56,7 @@ class HotKeyManager {
     // the keydown handler has started the request; typing in text fields is
     // intentionally left untouched.
     const suppressSolveKeyFollowups = e => {
-      if (isSolveKey(e) || isSingleModelKey(e) || isCaptureKey(e) || isCaptureSingleModelKey(e) || isCacheKey(e)) stopEvent(e);
+      if (isSingleModelKey(e) || isCaptureKey(e) || isCaptureSingleModelKey(e) || isCacheKey(e)) stopEvent(e);
     };
     window.addEventListener('keydown', handleKeyDown, { capture: true, passive: false });
     window.addEventListener('keypress', suppressSolveKeyFollowups, { capture: true, passive: false });

@@ -13,3 +13,4 @@ __pycache__/
 account-portal/local-admin-config.js
 supabase/.temp/
 sites/
+test-artifacts/
